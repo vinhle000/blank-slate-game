@@ -10,7 +10,7 @@ export default function Lobby() {
   const handleCreateRoom = async () => {
     const data = await createRoom(username);
     setRoomCode(data.roomCode);
-    socket.emit('join_room', { roomCode: data.roomCode, username });
+    socket.emit('join_room', { roomCode: data.roomCode, userId: data.userId });
   };
 
   const handleJoinRoom = async () => {
@@ -30,8 +30,8 @@ export default function Lobby() {
     fetchAndSetPlayers(); //fetch upon component mounts
 
     socket.on('player_joined', (player) => {
-      setPlayers((prev) => [...prev, player]);
-      console.log('PLayer has join .... ', player);
+      // setPlayers((prev) => [...prev, player]);
+      fetchAndSetPlayers();
     });
 
     return () => socket.off('player_joined');
