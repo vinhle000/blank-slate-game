@@ -1,0 +1,77 @@
+[
+  {
+    "id": 1,
+    "cue": "STAR ____",
+    "blankPosition": "after"
+  },
+  {
+    "id": 2,
+    "cue": "MOON ____",
+    "blankPosition": "after"
+  },
+  {
+    "id": 3,
+    "cue": "RIVER ____",
+    "blankPosition": "after"
+  },
+  {
+    "id": 4,
+    "cue": "MOUNTAIN ____",
+    "blankPosition": "after"
+  },
+  {
+    "id": 5,
+    "cue": "OCEAN ____",
+    "blankPosition": "after"
+  },
+  {
+    "id": 6,
+    "cue": "FIRE ____",
+    "blankPosition": "after"
+  },
+  {
+    "id": 7,
+    "cue": "SUN ____",
+    "blankPosition": "after"
+  },
+  {
+    "id": 8,
+    "cue": "WATER ____",
+    "blankPosition": "after"
+  },
+  {
+    "id": 9,
+    "cue": "SNOW ____",
+    "blankPosition": "after"
+  },
+  {
+    "id": 10,
+    "cue": "RAIN ____",
+    "blankPosition": "after"
+  },
+  {
+    "id": 11,
+    "cue": "TREE ____",
+    "blankPosition": "after"
+  },
+  {
+    "id": 12,
+    "cue": "CLOUD ____",
+    "blankPosition": "after"
+  },
+  {
+    "id": 13,
+    "cue": "WIND ____",
+    "blankPosition": "after"
+  },
+  {
+    "id": 14,
+    "cue": "ROCK ____",
+    "blankPosition": "after"
+  },
+  {
+    "id": 15,
+    "cue": "STORM ____",
+    "blankPosition": "after"
+  }
+]
