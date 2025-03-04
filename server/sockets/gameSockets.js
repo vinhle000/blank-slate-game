@@ -1,11 +1,26 @@
+const pool = require('../config/db');
+
 module.exports = (io) => {
   io.on('connection', (socket) => {
     console.log(`🔌 User connected: ${socket.id}`);
 
-    socket.on('join_room', ({ roomCode, username }) => {
+    socket.on('join_room', async ({ roomCode, userId }) => {
       socket.join(roomCode);
-      io.to(roomCode).emit('player_joined', { username });
-      console.log(`🛠 Player ${username} joined room ${roomCode}`);
+
+      // Check if user is exists in DB by userId
+      const userRes = await pool.query('SELECT * FROM users WHERE id = $1', [
+        userId,
+      ]);
+
+      if (userRes.rows.length > 0) {
+        const player = userRes.rows[0];
+
+        // ✅ Emit full player object, not inside `{ player: player }`
+        io.to(roomCode).emit('player_joined', player);
+        console.log(`🛠 Player ${player.username} joined room ${roomCode}`);
+      } else {
+        console.log(`⚠ User with ID ${userId} not found.`);
+      }
     });
 
     socket.on('start_round', async (roomCode) => {

@@ -1,54 +1,41 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import socket from '../socket';
-import axios from 'axios';
+import { createRoom, joinRoom, fetchPlayers } from '../services/roomService';
 
 export default function Lobby() {
   const [roomCode, setRoomCode] = useState('');
   const [players, setPlayers] = useState([]);
   const [username, setUsername] = useState('');
 
-  const createRoom = async () => {
-    const response = await axios.post(
-      'http://localhost:3000/api/rooms/create-room',
-      { username }
-    );
-
-    setRoomCode(response.data.roomCode);
-    socket.emit('join_room', { roomCode: response.data.roomCode, username });
+  const handleCreateRoom = async () => {
+    const data = await createRoom(username);
+    setRoomCode(data.roomCode);
+    socket.emit('join_room', { roomCode: data.roomCode, username });
   };
 
-  const joinRoom = async () => {
-    await axios.post('http://localhost:3000/api/rooms/join-room', {
-      roomCode,
-      username,
-    });
-    socket.emit('join_room', { roomCode, username });
-    fetchPlayers(); // Fetch latest player list after joining
+  const handleJoinRoom = async () => {
+    const data = await joinRoom(username, roomCode);
+    socket.emit('join_room', { roomCode, userId: data.userId });
+
+    const playersData = await fetchPlayers(roomCode);
+    setPlayers(playersData);
   };
 
-  const fetchPlayers = async () => {
-    if (!roomCode) return;
-
-    try {
-      const response = await axios.get(
-        `http://localhost:3000/api/rooms/${roomCode}/players`
-      );
-
-      setPlayers(response.data.users);
-    } catch (error) {
-      console.error('Error fetching players: ', error);
-    }
-  };
+  const fetchAndSetPlayers = useCallback(async () => {
+    const playersData = await fetchPlayers(roomCode);
+    setPlayers(playersData);
+  }, [roomCode]);
 
   useEffect(() => {
-    fetchPlayers(); //fetch upon component mounts
+    fetchAndSetPlayers(); //fetch upon component mounts
 
-    socket.on('player_joined', ({ username }) => {
-      setPlayers((prev) => [...prev, username]);
+    socket.on('player_joined', (player) => {
+      setPlayers((prev) => [...prev, player]);
+      console.log('PLayer has join .... ', player);
     });
 
     return () => socket.off('player_joined');
-  }, [fetchPlayers, roomCode]); // Depend on `roomCode` so it fetches correctly when a room is set
+  }, [fetchAndSetPlayers]);
 
   return (
     <div>
@@ -70,12 +57,12 @@ export default function Lobby() {
           onChange={(e) => setRoomCode(e.target.value)}
         />
         <div>
-          <button onClick={joinRoom}>Join Room</button>
+          <button onClick={handleJoinRoom}>Join Room</button>
         </div>
       </div>
 
       <div>
-        <button onClick={createRoom}>Create Room </button>
+        <button onClick={handleCreateRoom}>Create Room </button>
       </div>
 
       <h2>Room Code: {roomCode}</h2>
