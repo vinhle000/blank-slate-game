@@ -16,6 +16,21 @@ exports.getPlayersInRoom = async (req, res) => {
   }
 };
 
+exports.getRoom = async (req, res) => {
+  try {
+    const roomCode = req.params.roomCode;
+    const result = await pool.query(
+      'SELECT * FROM rooms WHERE room_code = $1',
+      [roomCode]
+    );
+
+    res.json({ room: result.rows[0] });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Error getting getting room info' });
+  }
+};
+
 exports.createRoom = async (req, res) => {
   try {
     const { username } = req.body;
@@ -45,7 +60,7 @@ exports.joinRoom = async (req, res) => {
   try {
     const { username, roomCode } = req.body;
     const userId = uuidv4();
-
+    // NOTE: Add checking of non existing and non valild room codes
     await pool.query(
       `INSERT INTO users (id, username, room_code, is_host) VALUES ($1, $2, $3, $4)`,
       [userId, username, roomCode, false]

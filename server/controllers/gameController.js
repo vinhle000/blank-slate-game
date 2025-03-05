@@ -9,17 +9,6 @@ exports.startRound = async (req, res) => {
   try {
     const roomCode = req.params.roomCode;
 
-    // Load prompts from JSON file;
-    const promptsPath = path.join(__dirname, '../data/gamePrompts.json');
-    const prompts = JSON.parse(fs.readFileSync(promptsPath, 'utf-8'));
-
-    if (!prompts || prompts.length === 0) {
-      throw new Error('Prompt list is empty!');
-    }
-
-    // Pick a random prompt
-    const prompt = prompts[Math.floor(Math.random() * prompts.length)];
-
     // Get current round number
     const roundRes = await pool.query(
       'SELECT COUNT(*) FROM rounds WHERE room_id = (SELECT id FROM rooms WHERE room_code = $1)',
@@ -27,6 +16,7 @@ exports.startRound = async (req, res) => {
     );
 
     // If no round exists, create one
+    let newPrompt = getPrompt();
 
     const roundNumber = parseInt(roundRes.rows[0].count) + 1;
 
@@ -41,4 +31,20 @@ exports.startRound = async (req, res) => {
     console.error(error);
     res.status(500).json({ error: 'Error starting round' });
   }
+};
+
+// Helper functions
+const getPrompt = () => {
+  // Load prompts from JSON file;
+  const promptsPath = path.join(__dirname, '../data/gamePrompts.json');
+  const prompts = JSON.parse(fs.readFileSync(promptsPath, 'utf-8'));
+
+  if (!prompts || prompts.length === 0) {
+    throw new Error('Prompt list is empty!');
+  }
+
+  // Pick a random prompt
+  const prompt = prompts[Math.floor(Math.random() * prompts.length)];
+
+  return prompt;
 };

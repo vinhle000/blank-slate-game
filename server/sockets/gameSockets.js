@@ -1,4 +1,6 @@
 const pool = require('../config/db');
+const path = require('path');
+const fs = require('fs');
 
 module.exports = (io) => {
   io.on('connection', (socket) => {
@@ -15,17 +17,22 @@ module.exports = (io) => {
       if (userRes.rows.length > 0) {
         const player = userRes.rows[0];
 
-        // ✅ Emit full player object, not inside `{ player: player }`
         io.to(roomCode).emit('player_joined', player);
         console.log(`🛠 Player ${player.username} joined room ${roomCode}`);
       } else {
         console.log(`⚠ User with ID ${userId} not found.`);
       }
     });
-
+    // FIXME: Change into 'game_started
     socket.on('start_round', async (roomCode) => {
       try {
         console.log(`🟢 Starting new round for room ${roomCode}`);
+
+        //update room status to "in_progress"
+        await pool.query(
+          'UPDATE rooms SET status = "in_progress" WHERE room_code = $1',
+          [roomCode]
+        );
 
         // Load prompts
         const promptsPath = path.join(__dirname, '../data/gamePrompts.json');

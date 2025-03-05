@@ -14,6 +14,12 @@ const io = new Server(server, {
   cors: { origin: '*' },
 });
 
+// Attach WebSocket instance, io to requests so controllers can access it
+app.use((req, res, next) => {
+  req.io = io;
+  next();
+});
+
 // WebSocket init
 const gameSockets = require('./sockets/gameSockets');
 gameSockets(io);

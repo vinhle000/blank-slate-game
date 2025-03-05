@@ -26,3 +26,15 @@ export const fetchPlayers = async (roomCode) => {
     return [];
   }
 };
+
+export const fetchRoomStatus = async (roomCode) => {
+  if (!roomCode) return null;
+
+  try {
+    const response = await axios.get(`${API_URL}/${roomCode}`);
+    return response.data.status; // [ {status: 'waiting' }, ...]
+  } catch (error) {
+    console.error('Error fetching players: ', error);
+    return [];
+  }
+};
