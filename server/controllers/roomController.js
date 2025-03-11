@@ -1,5 +1,6 @@
 const pool = require('../config/db');
 const { v4: uuidv4 } = require('uuid');
+const convertToCamelCase = require('../utils/convertToCamelCase');
 
 exports.getPlayersInRoom = async (req, res) => {
   try {
@@ -39,8 +40,8 @@ exports.createRoom = async (req, res) => {
 
     // create user as host
     const userRes = await pool.query(
-      `INSERT INTO users (id, username, room_code, is_host) VALUES ($1, $2, $3, $4)`,
-      [userId, username, roomCode, true]
+      `INSERT INTO users (id, username, room_code, is_host, total_score) VALUES ($1, $2, $3, $4, $5) RETURNING *`,
+      [userId, username, roomCode, true, 0]
     );
 
     // create room and assign roomCode
@@ -49,7 +50,7 @@ exports.createRoom = async (req, res) => {
       userId,
     ]);
 
-    res.json({ roomCode, userId });
+    res.json(convertToCamelCase(userRes.rows[0]));
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: 'Error create room' });
@@ -61,12 +62,12 @@ exports.joinRoom = async (req, res) => {
     const { username, roomCode } = req.body;
     const userId = uuidv4();
     // NOTE: Add checking of non existing and non valild room codes
-    await pool.query(
-      `INSERT INTO users (id, username, room_code, is_host) VALUES ($1, $2, $3, $4)`,
-      [userId, username, roomCode, false]
+    const userRes = await pool.query(
+      `INSERT INTO users (id, username, room_code, is_host, total_score) VALUES ($1, $2, $3, $4, $5) RETURNING *`,
+      [userId, username, roomCode, false, 0]
     );
-
-    res.json({ userId });
+    console.log(' JOIN user Response from query ---> ', userRes.rows[0]);
+    res.json(convertToCamelCase(userRes.rows[0]));
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: 'Error joining room' });

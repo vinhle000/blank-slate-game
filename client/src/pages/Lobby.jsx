@@ -1,98 +1,62 @@
 import { useEffect, useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useGameContext } from '../context/GameContext';
 
 import socket from '../socket';
-import {
-  createRoom,
-  joinRoom,
-  fetchPlayers,
-  fetchRoomStatus,
-} from '../services/roomService';
+import { createRoom, joinRoom, fetchPlayers } from '../services/roomService';
 
 export default function Lobby() {
-  const [roomCode, setRoomCode] = useState('');
-  const [players, setPlayers] = useState([]);
-  const [username, setUsername] = useState('');
-  const [userId, setUserId] = useState(null);
-  const [isHost, setIsHost] = useState(false);
-  const [roomStatus, setRoomStatus] = useState('waiting');
-  const navigate = useNavigate;
+  const { user, setUser, players, fetchAndSetPlayers } = useGameContext();
+
+  const [inputRoomCode, setInputRoomCode] = useState('');
+  const [inputUsername, setInputUsername] = useState('');
+  const navigate = useNavigate();
 
   const handleCreateRoom = async () => {
-    const data = await createRoom(username);
-    setRoomCode(data.roomCode);
-    setUserId(data.userId);
-    setIsHost(true);
-    socket.emit('join_room', { roomCode: data.roomCode, userId: data.userId });
+    const user = await createRoom(inputUsername);
+    setUser(user);
+    socket.emit('join_room', { roomCode: user.roomCode, userId: user.id }); // Room code was assigned in server endpoint when saving to DB
   };
 
   const handleJoinRoom = async () => {
-    const data = await joinRoom(username, roomCode);
-    setUserId(data.userId);
-    socket.emit('join_room', { roomCode, userId: data.userId });
-
-    const playersData = await fetchPlayers(roomCode);
-    setPlayers(playersData);
+    const user = await joinRoom(inputUsername, inputRoomCode);
+    setUser(user);
+    socket.emit('join_room', { roomCode: inputRoomCode, userId: user.id }); // Room code is from input text field
   };
 
   const handleStartGame = async () => {
-    socket.emit('start_round', roomCode);
+    socket.emit('game_start', user.roomCode);
   };
 
-  const fetchAndSetPlayers = useCallback(async () => {
-    const playersData = await fetchPlayers(roomCode);
-    setPlayers(playersData);
-  }, [roomCode]);
-
   useEffect(() => {
-    const checkStatus = async () => {
-      if (!roomCode) return;
-      const status = await fetchRoomStatus(roomCode);
-      setRoomStatus(status);
-    };
+    fetchAndSetPlayers(user.roomCode); //fetch upon component mounts
 
-    checkStatus();
-    fetchAndSetPlayers(); //fetch upon component mounts
-
-    socket.on('player_joined', (player) => {
-      // setPlayers((prev) => [...prev, player]);
-      fetchAndSetPlayers();
-    });
-
-    socket.on('round_start_phase', () => {
-      // FIXME: Change into 'game_started
-      setRoomStatus('in_progress');
+    socket.on('prompt_select_phase_started', () => {
+      navigate(`/game/${user.roomCode}`);
     });
 
     return () => {
-      socket.off('player_joined');
-      socket.off('round_start_phase'); // FIXME: Change into 'game_started
+      socket.off('prompt_select_phase_started');
     };
-  }, [fetchAndSetPlayers, roomCode]);
-
-  useEffect(() => {
-    if (roomStatus === 'in_progress') {
-      navigate(`/game/${roomCode}`);
-    }
-  });
+  }, [fetchAndSetPlayers, navigate, user]);
 
   return (
     <>
-      {userId ? (
+      {user?.id ? (
         <>
           <h2>
             Name:
-            <span style={{ color: 'grey' }}> {username}</span>
+            <span style={{ color: 'grey' }}> {inputUsername}</span>
           </h2>
-          <h2>Room: {roomCode}</h2>
+          <h2>Room: {user.roomCode}</h2>
           <h3>Players In Game:</h3>
           {players.map((player) => (
             <li key={player.id}>{player.username}</li>
           ))}
-          {isHost ? (
+          {user.isHost ? (
             <>
               {console.log('player data', players)}
-              <button onClick={handleStartGame}>Begin Game</button>
+              <button onClick={handleStartGame}>Start Game</button>
             </>
           ) : (
             <p>Waiting for host to start game...</p>
@@ -105,16 +69,16 @@ export default function Lobby() {
             <input
               type='text'
               placeholder='Player Name'
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
+              value={inputUsername}
+              onChange={(e) => setInputUsername(e.target.value)}
             />
           </div>
           <div>
             <input
               type='text'
               placeholder='Room Code'
-              value={roomCode}
-              onChange={(e) => setRoomCode(e.target.value)}
+              value={inputRoomCode}
+              onChange={(e) => setInputRoomCode(e.target.value)}
             />
             <div>
               <button onClick={handleJoinRoom}>Join Room</button>
