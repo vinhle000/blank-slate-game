@@ -16,6 +16,7 @@ export const GameProvider = ({ children }) => {
   const [user, setUser] = useState({});
   const [prompt, setPrompt] = useState('');
   const [players, setPlayers] = useState([]);
+  const [gamePhase, setGamePhase] = useState('');
 
   const fetchAndSetPlayers = useCallback(async (roomCode) => {
     if (!roomCode) return;
@@ -35,7 +36,16 @@ export const GameProvider = ({ children }) => {
 
   return (
     <GameContext.Provider
-      value={{ user, setUser, prompt, setPrompt, players, fetchAndSetPlayers }}
+      value={{
+        user,
+        setUser,
+        prompt,
+        setPrompt,
+        players,
+        fetchAndSetPlayers,
+        gamePhase,
+        setGamePhase,
+      }}
     >
       {children}
     </GameContext.Provider>

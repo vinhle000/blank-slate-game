@@ -6,7 +6,14 @@ import socket from '../socket';
 import { createRoom, joinRoom, fetchPlayers } from '../services/roomService';
 
 export default function Lobby() {
-  const { user, setUser, players, fetchAndSetPlayers } = useGameContext();
+  const {
+    user,
+    setUser,
+    players,
+    fetchAndSetPlayers,
+    setPrompt,
+    setGamePhase,
+  } = useGameContext();
 
   const [inputRoomCode, setInputRoomCode] = useState('');
   const [inputUsername, setInputUsername] = useState('');
@@ -31,7 +38,9 @@ export default function Lobby() {
   useEffect(() => {
     fetchAndSetPlayers(user.roomCode); //fetch upon component mounts
 
-    socket.on('prompt_select_phase_started', () => {
+    socket.on('prompt_select_phase_started', ({ prompt }) => {
+      setPrompt(prompt);
+      setGamePhase('prompt_select_phase');
       navigate(`/game/${user.roomCode}`);
     });
 
