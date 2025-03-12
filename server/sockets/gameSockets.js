@@ -4,6 +4,11 @@ const fs = require('fs');
 const { snakeToCamel } = require('../utils/caseConverter');
 const { getUser, createUser } = require('../models/usersModel');
 const { updateRoom } = require('../models/roomsModel');
+const {
+  createRound,
+  getLatestRoundNumber,
+  getRoundsInRoom,
+} = require('../models/roundsModel');
 
 module.exports = (io) => {
   io.on('connection', (socket) => {
@@ -29,14 +34,8 @@ module.exports = (io) => {
         });
 
         let prompt = getPrompt();
+        await createRound(roomCode, 1, prompt);
 
-        //TODO: Encapsulate this in roundsModel.js,  Create and persist new round
-        await pool.query(
-          'INSERT INTO rounds (room_id, round_number, prompt) VALUES ((SELECT id FROM rooms WHERE room_code = $1), 1, $2)',
-          [roomCode, prompt]
-        );
-
-        console.log({ prompt, roomCode });
         io.to(roomCode).emit('prompt_select_phase_started', { prompt });
       } catch (error) {
         console.error(`Socket 'game_start' error: `, error);
@@ -48,25 +47,12 @@ module.exports = (io) => {
       try {
         console.log(`🟢 Starting new round for room ${roomCode}`);
 
-        // Load prompts
         let prompt = getPrompt();
+        let latestRoundNumber = await getLatestRoundNumber(roomCode);
 
-        //get round number
-        const roundRes = await pool.query(
-          'SELECT COUNT(*) FROM rounds WHERE room_id = (SELECT id FROM rooms WHERE room_code = $1)',
-          [roomCode]
-        );
-
-        let roundNumber = parseInt(roundRes.rows[0].count) + 1;
-
-        // Persist new round to DB
-        await pool.query(
-          'INSERT INTO rounds (room_id, round_number, prompt) VALUES ((SELECT id FROM rooms WHERE room_code = $1), $2, $3)',
-          [roomCode, roundNumber, prompt]
-        );
-
+        await createRound(roomCode, latestRoundNumber + 1, prompt);
         io.to(roomCode).emit('prompt_select_phase_started', {
-          roundNumber,
+          latestRoundNumber,
           prompt,
         });
       } catch (error) {

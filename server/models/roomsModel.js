@@ -24,7 +24,7 @@ async function createRoom(roomCode, userId) {
     const query = `
     INSERT INTO rooms (room_code, host_id)
      VALUES ($1, $2)
-     `;
+     RETURNING *`;
 
     const result = await pool.query(query, [roomCode, userId]);
     return snakeToCamel(result.rows[0]);
