@@ -1,7 +1,14 @@
 const pool = require('../config/db');
 const { v4: uuidv4 } = require('uuid');
-const convertToCamelCase = require('../utils/convertToCamelCase');
+const convertToCamelCase = require('../utils/convertToCamelCase'); //REMOVE
+const {
+  getUser,
+  createUser,
+  getUsersByRoomCode,
+} = require('../models/usersModel');
+const {} = require('../models/roomsModel');
 
+//BUG: need to encapsulate to getUsersByRoomCode() in usersModel
 exports.getPlayersInRoom = async (req, res) => {
   try {
     const roomCode = req.params.roomCode;
@@ -38,11 +45,7 @@ exports.createRoom = async (req, res) => {
     const roomCode = Math.random().toString(36).substring(2, 7).toUpperCase();
     const userId = uuidv4();
 
-    // create user as host
-    const userRes = await pool.query(
-      `INSERT INTO users (id, username, room_code, is_host, total_score) VALUES ($1, $2, $3, $4, $5) RETURNING *`,
-      [userId, username, roomCode, true, 0]
-    );
+    const user = await createUser(userId, username, roomCode, true);
 
     // create room and assign roomCode
     await pool.query(`INSERT INTO rooms (room_code, host_id) VALUES ($1, $2)`, [
@@ -50,24 +53,22 @@ exports.createRoom = async (req, res) => {
       userId,
     ]);
 
-    res.json(convertToCamelCase(userRes.rows[0]));
+    res.json(user);
   } catch (error) {
     console.error(error);
-    res.status(500).json({ error: 'Error create room' });
+    res.status(500).json({ error: 'Error creating room' });
   }
 };
 
+//
 exports.joinRoom = async (req, res) => {
   try {
     const { username, roomCode } = req.body;
     const userId = uuidv4();
     // NOTE: Add checking of non existing and non valild room codes
-    const userRes = await pool.query(
-      `INSERT INTO users (id, username, room_code, is_host, total_score) VALUES ($1, $2, $3, $4, $5) RETURNING *`,
-      [userId, username, roomCode, false, 0]
-    );
-    console.log(' JOIN user Response from query ---> ', userRes.rows[0]);
-    res.json(convertToCamelCase(userRes.rows[0]));
+
+    const user = await createUser(userId, username, roomCode, false);
+    res.json(user);
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: 'Error joining room' });
