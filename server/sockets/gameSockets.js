@@ -1,7 +1,8 @@
 const pool = require('../config/db');
 const path = require('path');
 const fs = require('fs');
-const convertToCamelCase = require('../utils/convertToCamelCase');
+const { snakeToCamel } = require('../utils/caseConverter');
+const { updateRoom } = require('../models/roomsModels.js');
 
 module.exports = (io) => {
   io.on('connection', (socket) => {
@@ -10,13 +11,13 @@ module.exports = (io) => {
     socket.on('join_room', async ({ roomCode, userId }) => {
       socket.join(roomCode);
 
-      // Check if user is exists in DB by userId
+      //TODO: Encapsulate this in usersModel.js,  Create and persist new round
       const userRes = await pool.query('SELECT * FROM users WHERE id = $1', [
         userId,
       ]);
 
       if (userRes.rows.length > 0) {
-        const player = convertToCamelCase(userRes.rows[0]);
+        const player = snakeToCamel(userRes.rows[0]);
 
         io.to(roomCode).emit('player_joined', player);
         console.log(`🛠 Player ${player.username} joined room ${roomCode}`);
@@ -27,14 +28,16 @@ module.exports = (io) => {
 
     socket.on('game_start', async (roomCode) => {
       try {
-        // Update rooms's status and gamePhase
-        await pool.query(
-          `UPDATE rooms SET status = 'in_progress', game_phase = 'prompt_select_phase' WHERE room_code = $1`,
-          [roomCode]
-        );
+        let status = 'in_progress';
+        let gamePhase = 'prompt_select_phase';
+        const updatedRoom = await updateRoom(roomCode, {
+          status,
+          gamePhase,
+        });
 
         let prompt = getPrompt();
 
+        //TODO: Encapsulate this in roundsModel.js,  Create and persist new round
         await pool.query(
           'INSERT INTO rounds (room_id, round_number, prompt) VALUES ((SELECT id FROM rooms WHERE room_code = $1), 1, $2)',
           [roomCode, prompt]
