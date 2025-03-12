@@ -2,7 +2,8 @@ const pool = require('../config/db');
 const path = require('path');
 const fs = require('fs');
 const { snakeToCamel } = require('../utils/caseConverter');
-const { updateRoom } = require('../models/roomsModels.js');
+const { getUser, createUser } = require('../models/usersModel');
+const { updateRoom } = require('../models/roomsModel');
 
 module.exports = (io) => {
   io.on('connection', (socket) => {
@@ -10,19 +11,11 @@ module.exports = (io) => {
 
     socket.on('join_room', async ({ roomCode, userId }) => {
       socket.join(roomCode);
+      const user = await getUser(userId);
 
-      //TODO: Encapsulate this in usersModel.js,  Create and persist new round
-      const userRes = await pool.query('SELECT * FROM users WHERE id = $1', [
-        userId,
-      ]);
-
-      if (userRes.rows.length > 0) {
-        const player = snakeToCamel(userRes.rows[0]);
-
-        io.to(roomCode).emit('player_joined', player);
-        console.log(`🛠 Player ${player.username} joined room ${roomCode}`);
-      } else {
-        console.log(`⚠ User with ID ${userId} not found.`);
+      if (!!user && user?.roomCode) {
+        io.to(roomCode).emit('player_joined', user);
+        console.log(`🛠 Player ${user.username} joined room ${roomCode}`);
       }
     });
 

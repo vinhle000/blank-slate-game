@@ -16,6 +16,7 @@ async function getUser(userId) {
     if (userRes.rows.length > 0) {
       return snakeToCamel(userRes.rows[0]);
     } else {
+      console.log(`⚠ User with ID ${userId} not found.`);
       return null;
     }
   } catch (error) {
