@@ -15,34 +15,48 @@ export default function Game() {
     setCurrentRound,
   } = useGameContext();
 
-  const { isPromptConfirmed, setIsPromptConfirmed } = useState(false);
   const [answer, setAnswer] = useState('');
 
   const handleChangePrompt = async () => {
     socket.emit('change_prompt'); // will get new random prompt from server
   };
+
   const handleConfirm = async () => {
     socket.emit('confirm_prompt', { prompt, roundId: currentRound.id });
-    // set selected state to True
-    // on confirm - save to setPrompt(newPrompt)
   };
+
+  const handleEndRound = async () => {
+    socket.emit('end_round'); // manually ends round, instead of waiting for Timer
+  };
+
   useEffect(() => {
     socket.on('prompt_changed', ({ prompt }) => {
       setPrompt(prompt);
     });
-    socket.on('confirm_prompt', (currentRound) => {
-      setPrompt(currentRound.prompt);
-      setCurrentRound(currentRound);
+    socket.on('prompt_confirmed', ({ round }) => {
+      console.log(' confirm_prompt -> returns round = ', round);
+      setPrompt(round.prompt);
+      setCurrentRound(round);
       setGamePhase('answer_phase');
     });
-    socket.on('end_current_round', () => {
+    socket.on('end_round', () => {
       navigate(`result/${user.roomCode}`);
     });
 
     return () => {
-      socket.off('end_current_round');
+      socket.off('prompt_changed');
+      socket.off('prompt_confirmed');
+      socket.off('end_round');
     };
-  });
+  }, [navigate, setPrompt, setCurrentRound, setGamePhase, user.roomCode]);
+
+  // debug logs
+  // useEffect(() => {
+  //   console.log('currentRound:', currentRound);
+  //   console.log('prompt:', prompt);
+  //   console.log('gamePhase:', gamePhase);
+  // }, [currentRound, prompt, gamePhase]);
+
   return (
     <>
       <h2>
@@ -52,11 +66,9 @@ export default function Game() {
         Room: <span style={{ color: 'yellow' }}>{user.roomCode}</span>
       </h3>
 
-      {/* Show components for gamePhase = 'prompt_select_phase' */}
       {gamePhase === 'prompt_select_phase' && (
         <>
           <div> Prompt select phase </div>
-          {/* Show Host buttons */}
           {user.isHost ? (
             <>
               <div>{prompt}</div>
@@ -64,13 +76,41 @@ export default function Game() {
                 <button onClick={handleChangePrompt}>Change Prompt</button>
               </div>
               <div>
-                <button onClick={handleConfirm}>Submit</button>
+                <button onClick={handleConfirm}>Confirm</button>
               </div>
             </>
           ) : (
             <>
               <div>
                 <text>Waiting for host to select prompt</text>
+              </div>
+            </>
+          )}
+        </>
+      )}
+
+      {gamePhase === 'answer_phase' && (
+        <>
+          <label>
+            <span>{prompt}</span>
+
+            <input
+              placeholder='input your answer'
+              value={answer}
+              onChange={(e) => setAnswer(e.target.value)}
+            />
+          </label>
+
+          {user.isHost ? (
+            <>
+              <div>
+                <button onClick={handleEndRound}>End Round</button>
+              </div>
+            </>
+          ) : (
+            <>
+              <div>
+                <text>place holder, shows on NON host players</text>
               </div>
             </>
           )}

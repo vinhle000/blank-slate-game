@@ -76,8 +76,8 @@ module.exports = (io) => {
     // TODO: test this socket and verify it persists to db
     socket.on('confirm_prompt', async ({ prompt, roundId }) => {
       try {
-        const updatedRound = await updateRound(roundId, { prompt: prompt });
-        socket.emit('prompt_confirmed', { round: updatedRound });
+        const round = await updateRound(roundId, { prompt: prompt });
+        socket.emit('prompt_confirmed', { round: round });
       } catch (error) {
         console.error(error);
       }
