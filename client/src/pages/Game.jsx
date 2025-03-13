@@ -22,7 +22,11 @@ export default function Game() {
   };
 
   const handleConfirm = async () => {
-    socket.emit('confirm_prompt', { prompt, roundId: currentRound.id });
+    socket.emit('confirm_prompt', {
+      prompt,
+      roundId: currentRound.id,
+      roomCode: user.roomCode,
+    });
   };
 
   const handleEndRound = async () => {
@@ -34,7 +38,7 @@ export default function Game() {
       setPrompt(prompt);
     });
     socket.on('prompt_confirmed', ({ round }) => {
-      console.log(' confirm_prompt -> returns round = ', round);
+      console.log('prompt_confirmed received, round -> ', round);
       setPrompt(round.prompt);
       setCurrentRound(round);
       setGamePhase('answer_phase');
@@ -59,6 +63,7 @@ export default function Game() {
 
   return (
     <>
+      <div>GAME page</div>
       <h2>
         Player: <span style={{ color: 'pink' }}>{user.username}</span>
       </h2>
@@ -82,7 +87,7 @@ export default function Game() {
           ) : (
             <>
               <div>
-                <text>Waiting for host to select prompt</text>
+                <p>Waiting for host to confirm prompt for game...</p>
               </div>
             </>
           )}
@@ -110,7 +115,7 @@ export default function Game() {
           ) : (
             <>
               <div>
-                <text>place holder, shows on NON host players</text>
+                <p>place holder, shows on NON host players</p>
               </div>
             </>
           )}

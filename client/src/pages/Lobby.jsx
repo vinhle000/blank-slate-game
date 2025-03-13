@@ -11,7 +11,9 @@ export default function Lobby() {
     setUser,
     players,
     fetchAndSetPlayers,
+    prompt,
     setPrompt,
+    gamePhase,
     setGamePhase,
     setCurrentRound,
   } = useGameContext();
@@ -51,10 +53,17 @@ export default function Lobby() {
     };
   }, [fetchAndSetPlayers, navigate, user]);
 
+  // debug logs
+  useEffect(() => {
+    console.log(' ------- lobby logs ---- s');
+    console.log('prompt:', prompt);
+    console.log('gamePhase:', gamePhase);
+  }, [prompt, gamePhase]);
   return (
     <>
       {user?.id ? (
         <>
+          <div>LOBBY page</div>
           <h2>
             Name:
             <span style={{ color: 'grey' }}> {inputUsername}</span>

@@ -46,7 +46,6 @@ module.exports = (io) => {
       }
     });
 
-    // Next Round (start at 'prompt_select_phase')
     socket.on('next_round', async (roomCode) => {
       try {
         console.log(`🟢 Starting new round for room ${roomCode}`);
@@ -74,10 +73,10 @@ module.exports = (io) => {
     });
 
     // TODO: test this socket and verify it persists to db
-    socket.on('confirm_prompt', async ({ prompt, roundId }) => {
+    socket.on('confirm_prompt', async ({ prompt, roundId, roomCode }) => {
       try {
         const round = await updateRound(roundId, { prompt: prompt });
-        socket.emit('prompt_confirmed', { round: round });
+        io.to(roomCode).emit('prompt_confirmed', { round: round });
       } catch (error) {
         console.error(error);
       }
