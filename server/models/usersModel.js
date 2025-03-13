@@ -12,7 +12,6 @@ async function getUser(userId) {
     const userRes = await pool.query('SELECT * FROM users WHERE id = $1', [
       userId,
     ]);
-    console.log(' user MODEL / getUser : ', userRes.rows);
     if (userRes.rows.length > 0) {
       return snakeToCamel(userRes.rows[0]);
     } else {

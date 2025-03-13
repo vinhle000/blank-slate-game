@@ -7,6 +7,8 @@ const pool = require('./config/db'); // PostgreSQL Connection
 
 const roomRoutes = require('./routes/roomRoutes');
 const gameRoutes = require('./routes/gameRoutes');
+const userRoutes = require('./routes/userRoutes');
+const roundRoutes = require('./routes/roundRoutes');
 
 const app = express();
 const server = http.createServer(app);
@@ -30,6 +32,8 @@ app.use(express.json());
 // API Route to Create a Room
 app.use('/api/rooms', roomRoutes);
 app.use('/api/game', gameRoutes);
+app.use('/api/users', userRoutes);
+app.use('/api/rounds', roundRoutes);
 
 app.get('/test', async (req, res) => {
   try {

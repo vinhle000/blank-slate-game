@@ -2,6 +2,26 @@ const pool = require('../config/db');
 const { camelToSnake, snakeToCamel } = require('../utils/caseConverter');
 
 /**
+ * get round by uuid
+ * @param {string} roomCode - Unique room code
+ * @returns {Promise<object>} - round data obj
+ */
+async function getRound(roundId) {
+  try {
+    const result = await pool.query(
+      `
+      SELECT *
+      FROM rounds
+      WHERE id = $1`,
+      [roundId]
+    );
+    return snakeToCamel(result.rows[0]);
+  } catch (error) {
+    console.error('Error getting round by id from DB: ', error);
+    throw error;
+  }
+}
+/**
  * Creates a new round
  * @param {string} roomCode - Unique room code
  * @param {number} roundNumber - number of round in game for respective room
@@ -95,6 +115,7 @@ async function updateRound(roundId, updates) {
   }
 }
 module.exports = {
+  getRound,
   createRound,
   getLatestRoundNumber,
   getRoundsInRoom,
