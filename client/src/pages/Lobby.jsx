@@ -13,6 +13,7 @@ export default function Lobby() {
     fetchAndSetPlayers,
     setPrompt,
     setGamePhase,
+    setCurrentRound,
   } = useGameContext();
 
   const [inputRoomCode, setInputRoomCode] = useState('');
@@ -38,8 +39,9 @@ export default function Lobby() {
   useEffect(() => {
     fetchAndSetPlayers(user.roomCode); //fetch upon component mounts
 
-    socket.on('prompt_select_phase_started', ({ prompt }) => {
+    socket.on('prompt_select_phase_started', ({ prompt, currentRound }) => {
       setPrompt(prompt);
+      setCurrentRound(currentRound);
       setGamePhase('prompt_select_phase');
       navigate(`/game/${user.roomCode}`);
     });

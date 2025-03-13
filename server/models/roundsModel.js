@@ -1,5 +1,5 @@
 const pool = require('../config/db');
-const { snakeToCamel } = require('../utils/caseConverter');
+const { camelToSnake, snakeToCamel } = require('../utils/caseConverter');
 
 /**
  * Creates a new round
@@ -64,8 +64,39 @@ async function getRoundsInRoom(roomCode) {
     throw error;
   }
 }
+/**
+ * Update round's fields dynamically
+ * @param {string} roundId - UUID of round
+ * @param {object} updates - Obj containing fields to update
+ * @returns {Promise<object>} - updated room ojb
+ */
+async function updateRound(roundId, updates) {
+  try {
+    const queryUpdates = camelToSnake(updates);
+
+    // Since roundId would be $1, adding 2 to index for proceeding values
+    const setClause = Object.keys(queryUpdates)
+      .map((key, index) => `${key} = $${index + 2}`)
+      .join(', ');
+
+    const result = await pool.query(
+      `
+      UPDATE rounds
+      SET ${setClause}
+      WHERE id = $1
+      RETURNING *`,
+      [roundId, ...Object.values(updates)]
+    );
+
+    return snakeToCamel(result.rows[0]);
+  } catch (error) {
+    console.error('Error updating round:', error);
+    throw error;
+  }
+}
 module.exports = {
   createRound,
   getLatestRoundNumber,
   getRoundsInRoom,
+  updateRound,
 };

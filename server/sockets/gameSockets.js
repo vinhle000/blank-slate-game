@@ -8,6 +8,7 @@ const {
   createRound,
   getLatestRoundNumber,
   getRoundsInRoom,
+  updateRound,
 } = require('../models/roundsModel');
 
 module.exports = (io) => {
@@ -34,15 +35,18 @@ module.exports = (io) => {
         });
 
         let prompt = getPrompt();
-        await createRound(roomCode, 1, prompt);
+        const currentRound = await createRound(roomCode, 1, prompt);
 
-        io.to(roomCode).emit('prompt_select_phase_started', { prompt });
+        io.to(roomCode).emit('prompt_select_phase_started', {
+          prompt,
+          currentRound,
+        });
       } catch (error) {
         console.error(`Socket 'game_start' error: `, error);
       }
     });
 
-    // Next Round
+    // Next Round (start at 'prompt_select_phase')
     socket.on('next_round', async (roomCode) => {
       try {
         console.log(`🟢 Starting new round for room ${roomCode}`);
@@ -55,6 +59,25 @@ module.exports = (io) => {
           latestRoundNumber,
           prompt,
         });
+      } catch (error) {
+        console.error(error);
+      }
+    });
+
+    socket.on('change_prompt', async () => {
+      try {
+        const prompt = getPrompt();
+        socket.emit('prompt_changed', { prompt });
+      } catch (error) {
+        console.log('Error getting new prompt');
+      }
+    });
+
+    // TODO: test this socket and verify it persists to db
+    socket.on('confirm_prompt', async ({ prompt, roundId }) => {
+      try {
+        const updatedRound = await updateRound(roundId, { prompt: prompt });
+        socket.emit('prompt_confirmed', { round: updatedRound });
       } catch (error) {
         console.error(error);
       }

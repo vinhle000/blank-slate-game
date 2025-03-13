@@ -17,6 +17,7 @@ export const GameProvider = ({ children }) => {
   const [prompt, setPrompt] = useState('');
   const [players, setPlayers] = useState([]);
   const [gamePhase, setGamePhase] = useState('');
+  const [currentRound, setCurrentRound] = useState(null);
 
   const fetchAndSetPlayers = useCallback(async (roomCode) => {
     if (!roomCode) return;
@@ -45,6 +46,8 @@ export const GameProvider = ({ children }) => {
         fetchAndSetPlayers,
         gamePhase,
         setGamePhase,
+        currentRound,
+        setCurrentRound,
       }}
     >
       {children}
