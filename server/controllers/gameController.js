@@ -1,10 +1,13 @@
 const fs = require('fs');
 const path = require('path');
 const pool = require('../config/db');
+const { getUser } = require('../models/usersModel');
+const { getRound } = require('../models/roundsModel');
+const { createAnswer } = require('../models/answerModel.js');
 
 // TODO: Add prompt selection redo/draw different one
 // Take into account for redo as the game goes, we have "discard pile" so no same prompts during games
-
+// Current NOT in use - starting round procedure is done in gameSocket.js
 exports.startRound = async (req, res) => {
   try {
     const roomCode = req.params.roomCode;
@@ -30,6 +33,28 @@ exports.startRound = async (req, res) => {
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: 'Error starting round' });
+  }
+};
+
+exports.submitAnswer = async (req, res) => {
+  try {
+    const { roundId, userId, answer } = req.body;
+
+    const round = await getRound(roundId);
+    if (!round) {
+      return res.status(404).json({ error: 'round not found' });
+    }
+
+    const user = await getUser(userId);
+    if (!user) {
+      return res.status(404).json({ error: 'user not found' });
+    }
+
+    let answerData = await createAnswer(roundId, userId, answer);
+    res.status(201).json(answerData);
+  } catch (error) {
+    console.error('Error submitting answer');
+    res.status(500).json({ error: 'Error submitting answer' });
   }
 };
 

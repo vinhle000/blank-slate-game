@@ -15,7 +15,7 @@ async function createAnswer(roundId, userId, answerText) {
       INSERT INTO answers
       (round_id, user_id, answer)
       VALUES ($1, $2, $3)
-      RETURN *`,
+      RETURNING *`,
       [roundId, userId, answerText]
     );
 
