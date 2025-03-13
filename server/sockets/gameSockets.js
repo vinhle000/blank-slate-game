@@ -68,17 +68,43 @@ module.exports = (io) => {
         const prompt = getPrompt();
         socket.emit('prompt_changed', { prompt });
       } catch (error) {
-        console.log('Error getting new prompt');
+        console.error('Error getting new prompt: ', error);
       }
     });
 
-    // TODO: test this socket and verify it persists to db
     socket.on('confirm_prompt', async ({ prompt, roundId, roomCode }) => {
       try {
+        const updatedRoom = await updateRoom(roomCode, {
+          gamePhase: 'answer_phase',
+        });
         const round = await updateRound(roundId, { prompt: prompt });
+
         io.to(roomCode).emit('prompt_confirmed', { round: round });
       } catch (error) {
         console.error(error);
+      }
+    });
+
+    // TODO: Add Timer ending to trigger same socket broadcast to players
+    socket.on('end_round', async ({ roomCode }) => {
+      try {
+        const room = await updateRoom(roomCode, {
+          gamePhase: 'display_answer_phase',
+        });
+        console.log('On end_round  -  room = ', room);
+        io.to(roomCode).emit('round_ended');
+      } catch (error) {
+        console.error('Error attempting to end round: ', error);
+      }
+    });
+
+    socket.on('show_results', async ({ roomCode }) => {
+      try {
+        const room = await updateRoom(roomCode, { gamePhase: 'results_phase' });
+        console.log('On show_result  -  room = ', room);
+        io.to(roomCode).emit('showing_results');
+      } catch (error) {
+        console.error('Error with show_result broadcast: ', error);
       }
     });
 

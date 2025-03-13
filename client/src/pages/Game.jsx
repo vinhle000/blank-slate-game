@@ -30,27 +30,43 @@ export default function Game() {
   };
 
   const handleEndRound = async () => {
-    socket.emit('end_round'); // manually ends round, instead of waiting for Timer
+    socket.emit('end_round', { roomCode: user.roomCode }); // manually ends round, instead of waiting for Timer
+  };
+
+  const handleNext = async () => {
+    socket.emit('show_results', { roomCode: user.roomCode });
   };
 
   useEffect(() => {
     socket.on('prompt_changed', ({ prompt }) => {
       setPrompt(prompt);
     });
+
     socket.on('prompt_confirmed', ({ round }) => {
       console.log('prompt_confirmed received, round -> ', round);
       setPrompt(round.prompt);
       setCurrentRound(round);
       setGamePhase('answer_phase');
     });
-    socket.on('end_round', () => {
-      navigate(`result/${user.roomCode}`);
+
+    socket.on('round_ended', () => {
+      console.log('round is ending... submitting answer');
+      setGamePhase('display_answer_phase');
+      // TODO: submit answer -> persist answer to DB -> calculate score -> update user.totalScore's
+      // 1. sent post request to persist answer to DB
+      // 2. call api to servie to calculate points
+      // Result page will pull down players list again.
+    });
+
+    socket.on('showing_results', () => {
+      navigate(`/results/${user.roomCode}`);
     });
 
     return () => {
       socket.off('prompt_changed');
       socket.off('prompt_confirmed');
-      socket.off('end_round');
+      socket.off('round_ended');
+      socket.off('showing_results');
     };
   }, [navigate, setPrompt, setCurrentRound, setGamePhase, user.roomCode]);
 
@@ -121,17 +137,21 @@ export default function Game() {
           )}
         </>
       )}
-      {/* Display Prompt cue */}
-      {/* Show components for gamePhase = 'answer_phase' */}
-      {/* text field and save its state with handler*/}
-      {/*End round button for Host
-         - socket.emit('end_round'), \
 
-      (SERVER)socket.on('end_round') will prematurely end the round
-        - TimeEnd and EndRound will call the same function to emit the 'end_current_round' to client
-      */}
-      {/* Testing going to Result Page  */}
-      {/* Show Time Remaining before Round ends */}
+      {gamePhase === 'display_answer_phase' && (
+        <>
+          <label>
+            <span>{prompt}</span>
+            <span style={{ color: 'green' }}>{answer}</span>
+          </label>
+
+          <>
+            <div>
+              <button onClick={handleNext}>Next</button>
+            </div>
+          </>
+        </>
+      )}
     </>
   );
 }
