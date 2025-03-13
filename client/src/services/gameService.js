@@ -1,6 +1,7 @@
 import axios from 'axios';
 
-const API_URL = `${import.meta.VITE_API_BASE_URL}/game`;
+//Use `import.meta.env.VITE_*` for Vite environment variables
+const API_URL = `${import.meta.env.VITE_API_BASE_URL}/api/game`;
 
 export const startRound = async (roomCode) => {
   const response = await axios.post(`${API_URL}/start-round${roomCode}`);
@@ -15,5 +16,24 @@ export const getRound = async (roomCode) => {
   } catch (error) {
     console.error('Error fetching current round: ', error);
     return null;
+  }
+};
+
+export const submitAnswer = async (roomId, userId, answer) => {
+  try {
+    const requestBody = {
+      roomId,
+      userId,
+      answer,
+    };
+
+    const response = await axios.post(`${API_URL}/submit-answer`, requestBody);
+    console.log(
+      ' gameService / submitAnswer response data = , ',
+      response.data
+    );
+    return response.data;
+  } catch (error) {
+    console.error('Error submitting Answer to server: ', error);
   }
 };

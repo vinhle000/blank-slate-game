@@ -1,6 +1,7 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useGameContext } from '../context/GameContext';
+import { submitAnswer } from '../services/gameService.js';
 import socket from '../socket';
 
 export default function Game() {
@@ -16,6 +17,7 @@ export default function Game() {
   } = useGameContext();
 
   const [answer, setAnswer] = useState('');
+  const answerRef = useRef('');
 
   const handleChangePrompt = async () => {
     socket.emit('change_prompt'); // will get new random prompt from server
@@ -27,6 +29,11 @@ export default function Game() {
       roundId: currentRound.id,
       roomCode: user.roomCode,
     });
+  };
+
+  const handleInputChange = async (e) => {
+    setAnswer(e.target.value);
+    answerRef.current = e.target.value; // Used to get most recent data, for realtime websocket events
   };
 
   const handleEndRound = async () => {
@@ -50,11 +57,12 @@ export default function Game() {
     });
 
     socket.on('round_ended', () => {
-      console.log('round is ending... submitting answer');
       setGamePhase('display_answer_phase');
+      submitAnswer(currentRound.id, user.id, answerRef.current);
+
       // TODO: submit answer -> persist answer to DB -> calculate score -> update user.totalScore's
-      // 1. sent post request to persist answer to DB
-      // 2. call api to servie to calculate points
+      // [x] 1. sent post request to persist answer to DB
+      // [ ] 2. call api to servie to calculate points
       // Result page will pull down players list again.
     });
 
@@ -118,7 +126,7 @@ export default function Game() {
             <input
               placeholder='input your answer'
               value={answer}
-              onChange={(e) => setAnswer(e.target.value)}
+              onChange={handleInputChange}
             />
           </label>
 
