@@ -2,7 +2,7 @@ const fs = require('fs');
 const path = require('path');
 const pool = require('../config/db');
 const { getUser } = require('../models/usersModel');
-const { getRound } = require('../models/roundsModel');
+const { getRound, appendAnswerToRound } = require('../models/roundsModel');
 const { createAnswer } = require('../models/answerModel.js');
 
 // TODO: Add prompt selection redo/draw different one
@@ -39,7 +39,6 @@ exports.startRound = async (req, res) => {
 exports.submitAnswer = async (req, res) => {
   try {
     const { roundId, userId, answer } = req.body;
-
     const round = await getRound(roundId);
     if (!round) {
       return res.status(404).json({ error: 'round not found' });
@@ -50,10 +49,12 @@ exports.submitAnswer = async (req, res) => {
       return res.status(404).json({ error: 'user not found' });
     }
 
-    let answerData = await createAnswer(roundId, userId, answer);
-    res.status(201).json(answerData);
+    let answerData = await createAnswer(roundId, userId, answer); // using what Id from the DB resource
+    let roundAnswerIds = await appendAnswerToRound(roundId, answerData.id);
+
+    res.status(201).json({ answer: answerData, answerIds: roundAnswerIds });
   } catch (error) {
-    console.error('Error submitting answer');
+    console.error('Error submitting answer: ', error);
     res.status(500).json({ error: 'Error submitting answer' });
   }
 };

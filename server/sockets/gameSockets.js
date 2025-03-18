@@ -91,7 +91,6 @@ module.exports = (io) => {
         const room = await updateRoom(roomCode, {
           gamePhase: 'display_answer_phase',
         });
-        console.log('On end_round  -  room = ', room);
         io.to(roomCode).emit('round_ended');
       } catch (error) {
         console.error('Error attempting to end round: ', error);

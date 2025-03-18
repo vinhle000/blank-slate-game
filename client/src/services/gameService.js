@@ -19,10 +19,10 @@ export const getRound = async (roomCode) => {
   }
 };
 
-export const submitAnswer = async (roomId, userId, answer) => {
+export const submitAnswer = async (roundId, userId, answer) => {
   try {
     const requestBody = {
-      roomId,
+      roundId,
       userId,
       answer,
     };

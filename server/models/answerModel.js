@@ -8,6 +8,14 @@ answers
     answer TEXT
     score INT DEFAULT 0
 */
+
+/**
+ * Create new answer in DB
+ * @param {string} roundId - UUID of round
+ * @param {string} userId - UUID of user
+ * @param {string} answer - text of the user the answer to respond to the round prompt
+ * @returns {Promise<object>} - answer data obj
+ */
 async function createAnswer(roundId, userId, answerText) {
   try {
     const result = await pool.query(
