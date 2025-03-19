@@ -99,9 +99,9 @@ exports.calculateScore = async (req, res) => {
       scoreMap[userId] = score;
     }
 
-    await updateScoresInDatabase(scoreMap);
+    const users = await updateScoresInDatabase(scoreMap);
 
-    res.json({ message: 'Scores updated successfully', scores: scoreMap });
+    res.json(users);
   } catch (error) {
     console.error('Error calculating score for round:  ', error);
     res.status(500).json({ error: 'Error calculating score for round' });

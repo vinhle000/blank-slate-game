@@ -78,8 +78,9 @@ const updateScoresInDatabase = async (scoreMap) => {
     console.log('Generated SQL Query:', query); // Debug query string
 
     const result = await pool.query(query);
-    console.log('calculate scores From answers results ---->   ', result.rows);
+
     console.log('Scores updated successfully');
+    return snakeToCamel(result.rows);
   } catch (error) {
     console.error('Error updating scores: ', error);
   }

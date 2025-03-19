@@ -20,7 +20,7 @@ export const fetchPlayers = async (roomCode) => {
 
   try {
     const response = await axios.get(`${API_URL}/${roomCode}/players`);
-    return response.data.users; // [ {user obj }, ...]
+    return response.data.users; // [ {user obj }, ...] //TODO: update Endpoint response to be just response.data
   } catch (error) {
     console.error('Error fetching players: ', error);
     return [];

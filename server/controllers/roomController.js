@@ -1,6 +1,7 @@
 const pool = require('../config/db');
 const { v4: uuidv4 } = require('uuid');
 const convertToCamelCase = require('../utils/convertToCamelCase'); //REMOVE
+const { snakeToCamel } = require('../utils/caseConverter');
 const {
   getUser,
   createUser,
@@ -17,7 +18,7 @@ exports.getPlayersInRoom = async (req, res) => {
       [roomCode]
     );
 
-    res.json({ users: result.rows });
+    res.json({ users: snakeToCamel(result.rows) });
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: 'Error getting players in room' });

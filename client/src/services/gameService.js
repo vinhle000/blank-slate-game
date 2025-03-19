@@ -37,3 +37,22 @@ export const submitAnswer = async (roundId, userId, answer) => {
     console.error('Error submitting Answer to server: ', error);
   }
 };
+
+export const calculateAndUpdateScores = async (roundId) => {
+  try {
+    const response = await axios.post(`${API_URL}/calculate-score`, {
+      roundId,
+    });
+    console.log(
+      //BUG: //TODO: This is working!!!!!!
+      ' DATA RECEIVED FROM calculateAndUpdateScores request ',
+      response.data
+    );
+    return response.data;
+  } catch (error) {
+    console.error(
+      'Error during request to calculate and update scores: ',
+      error
+    );
+  }
+};
