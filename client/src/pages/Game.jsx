@@ -111,7 +111,9 @@ export default function Game() {
 
   return (
     <>
-      <div>GAME page</div>
+      <div>
+        GAME <span>Round# {currentRound.roundNumber}</span>
+      </div>
       <h2>
         Player: <span style={{ color: 'pink' }}>{user.username}</span>
       </h2>

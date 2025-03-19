@@ -75,7 +75,7 @@ const updateScoresInDatabase = async (scoreMap) => {
       RETURNING *
     `;
 
-    console.log('Generated SQL Query:', query); // Debug query string
+    // console.log('Generated SQL Query:', query); // Debug query string
 
     const result = await pool.query(query);
 

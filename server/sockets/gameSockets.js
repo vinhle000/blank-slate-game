@@ -56,14 +56,18 @@ module.exports = (io) => {
 
     socket.on('next_round', async (roomCode) => {
       try {
-        console.log(`🟢 Starting new round for room ${roomCode}`);
+        console.log(`🟢 Starting NEW round for room ${roomCode}`);
 
         let prompt = getPrompt();
         let latestRoundNumber = await getLatestRoundNumber(roomCode);
 
-        await createRound(roomCode, latestRoundNumber + 1, prompt);
+        const currentRound = await createRound(
+          roomCode,
+          latestRoundNumber + 1,
+          prompt
+        );
         io.to(roomCode).emit('prompt_select_phase_started', {
-          latestRoundNumber,
+          currentRound,
           prompt,
         });
       } catch (error) {
@@ -144,7 +148,7 @@ module.exports = (io) => {
         }
       }
     );
-
+    // TODO: Find winner here?
     socket.on('calculate_scores', async ({ roomCode, roundId }) => {
       try {
         const updatedUsers = await calculateScores(roundId);

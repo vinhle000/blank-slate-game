@@ -1,14 +1,31 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useGameContext } from '../context/GameContext';
+import socket from '../socket';
 
 export default function Result() {
   const navigate = useNavigate();
-  const { user, players, gamePhase } = useGameContext();
+  const { user, players, gamePhase, setPrompt, setCurrentRound, setGamePhase } =
+    useGameContext();
 
+  //Only available to Host, so only emits ONE event
   const handleStartRound = (e) => {
     console.log('Start round button pressed');
+    socket.emit('next_round', user.roomCode);
   };
+
+  useEffect(() => {
+    socket.on('prompt_select_phase_started', ({ currentRound, prompt }) => {
+      setGamePhase('prompt_select_phase');
+      setCurrentRound(currentRound);
+      setPrompt(prompt);
+      navigate(`/game/${user.roomCode}`);
+    });
+
+    return () => {
+      socket.off('prompt_select_phase_started');
+    };
+  }, [setGamePhase, setCurrentRound, setPrompt, setPrompt, navigate]);
   return (
     <>
       <h1>Round Results</h1>
@@ -21,12 +38,14 @@ export default function Result() {
       <h3>Scores</h3>
 
       <div>
-        {players.map((player) => (
-          <li key={player.id}>
-            <span>{player.username}</span>
-            <span> {player.totalScore}</span>
-          </li>
-        ))}
+        <ul>
+          {players.map((player) => (
+            <li key={player.id}>
+              <span>{player.username}</span>
+              <span> {player.totalScore}</span>
+            </li>
+          ))}
+        </ul>
       </div>
       {/* show players and score */}
 
