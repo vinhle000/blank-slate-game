@@ -53,6 +53,38 @@ async function createUser(userId, username, roomCode, isHost) {
   }
 }
 
+//
+/**
+ *  Bulk Update query update for user.total_scores
+ * @param {{userId: score}}  scoreMap - Scores by userId for this round to add to the total_score
+ * @returns {Promise<object>} - array of Users with updated total_scores
+ */
+const updateScoresInDatabase = async (scoreMap) => {
+  if (Object.keys(scoreMap).length === 0) return;
+
+  try {
+    const values = Object.entries(scoreMap)
+      .map(([userId, score]) => `('${userId}'::UUID, ${score})`) //  Cast UUIDs explicitly
+      .join(', ');
+
+    const query = `
+      UPDATE users
+      SET total_score = users.total_score + score_update.score
+      FROM (VALUES ${values}) AS score_update(id, score)
+      WHERE users.id = score_update.id
+      RETURNING *
+    `;
+
+    console.log('Generated SQL Query:', query); // Debug query string
+
+    const result = await pool.query(query);
+    console.log('calculate scores From answers results ---->   ', result.rows);
+    console.log('Scores updated successfully');
+  } catch (error) {
+    console.error('Error updating scores: ', error);
+  }
+};
+
 //TODO: fix function to query for supplying roomController.js -> getPlayersInRoom()
 /**
  * Gets list Users(Players) in room by roomCode
@@ -81,5 +113,6 @@ async function createUser(userId, username, roomCode, isHost) {
 module.exports = {
   getUser,
   createUser,
+  updateScoresInDatabase,
   // getUsersByRoomCode,
 };

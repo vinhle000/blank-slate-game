@@ -10,6 +10,33 @@ answers
 */
 
 /**
+ * Get answer(s) in DB by UUIDs
+ * @param {[string]} userIds - array of answer UUIDs
+ * @returns {Promise<object>} - array of answer ({id, userId, answer}) data objects
+ */
+async function getAnswersByIds(answerIds) {
+  try {
+    const result = await pool.query(
+      `
+      SELECT id, user_id, answer
+      FROM answers
+      WHERE id = ANY($1)
+      `,
+      [answerIds]
+    );
+
+    // console.log('Raw result.rows:', result.rows); // Should be an array
+    const transformed = snakeToCamel(result.rows);
+    // console.log('Transformed result:', transformed); // Should still be an array
+
+    return transformed;
+  } catch (error) {
+    console.error('Error retrieving answers from DB:', error);
+    throw error;
+  }
+}
+
+/**
  * Create new answer in DB
  * @param {string} roundId - UUID of round
  * @param {string} userId - UUID of user
@@ -35,5 +62,6 @@ async function createAnswer(roundId, userId, answerText) {
 }
 
 module.exports = {
+  getAnswersByIds,
   createAnswer,
 };
