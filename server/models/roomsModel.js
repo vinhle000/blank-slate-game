@@ -60,7 +60,7 @@ async function updateRoom(roomCode, updates) {
 
     const result = await pool.query(query, [roomCode, ...values]);
 
-    return result.rows[0];
+    return snakeToCamel(result.rows[0]);
   } catch (error) {
     console.error('Error updating room status: ', error);
     throw error;

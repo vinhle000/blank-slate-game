@@ -1,7 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useGameContext } from '../context/GameContext';
-import { submitAnswer } from '../services/gameService.js';
 import socket from '../socket';
 
 export default function Game() {
@@ -14,6 +13,7 @@ export default function Game() {
     setGamePhase,
     currentRound,
     setCurrentRound,
+    setPlayers,
   } = useGameContext();
 
   const [answer, setAnswer] = useState('');
@@ -37,7 +37,10 @@ export default function Game() {
   };
 
   const handleEndRound = async () => {
-    socket.emit('end_round', { roomCode: user.roomCode }); // manually ends round, instead of waiting for Timer
+    socket.emit('end_round', {
+      roomCode: user.roomCode,
+      roomId: currentRound.id,
+    }); // manually ends round, instead of waiting for Timer
   };
 
   const handleNext = async () => {
@@ -56,14 +59,33 @@ export default function Game() {
       setGamePhase('answer_phase');
     });
 
-    socket.on('round_ended', () => {
-      setGamePhase('display_answer_phase');
-      submitAnswer(currentRound.id, user.id, answerRef.current);
+    socket.on('round_ended', async () => {
+      console.log('Round ended! Submitting answer and updating scores...');
 
-      // TODO: submit answer -> persist answer to DB -> calculate score -> update user.totalScore's
-      // [x] 1. sent post request to persist answer to DB
-      // [ ] 2. call api to servie to calculate points
-      // Result page will pull down players list again.
+      socket.emit('submit_answer', {
+        roomCode: user.roomCode,
+        roundId: currentRound.id,
+        userId: user.id,
+        answer: answerRef.current,
+      });
+    });
+
+    socket.on('all_answers_submitted', async () => {
+      if (user.isHost) {
+        console.log(
+          '🟢 Host detected all answers submitted. Requesting score calculation...'
+        );
+        socket.emit('calculate_scores', {
+          roomCode: user.roomCode,
+          roundId: currentRound.id,
+        });
+      }
+    });
+
+    socket.on('scores_updated', ({ users }) => {
+      console.log('  Received updated scores', users);
+      setPlayers(users);
+      setGamePhase('display_answer_phase');
     });
 
     socket.on('showing_results', () => {
@@ -74,6 +96,8 @@ export default function Game() {
       socket.off('prompt_changed');
       socket.off('prompt_confirmed');
       socket.off('round_ended');
+      socket.off('all_answers_submitted');
+      socket.off('scores_updated');
       socket.off('showing_results');
     };
   }, [navigate, setPrompt, setCurrentRound, setGamePhase, user.roomCode]);
