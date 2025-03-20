@@ -14,6 +14,7 @@ export default function Game() {
     currentRound,
     setCurrentRound,
     setPlayers,
+    setWinningUsers,
   } = useGameContext();
 
   const [answer, setAnswer] = useState('');
@@ -43,6 +44,9 @@ export default function Game() {
     }); // manually ends round, instead of waiting for Timer
   };
 
+  // NOTE: Currently any player that presses "Next" button
+  // will cause all players to go to the results screen
+  // - Maybe change to host ONLY to have this button
   const handleNext = async () => {
     socket.emit('show_results', { roomCode: user.roomCode });
   };
@@ -88,6 +92,11 @@ export default function Game() {
       setGamePhase('display_answer_phase');
     });
 
+    socket.on('win_found', ({ winningUsers }) => {
+      console.log(' WINNER(S) found!!! - ', winningUsers);
+      setWinningUsers(winningUsers);
+    });
+
     socket.on('showing_results', () => {
       navigate(`/results/${user.roomCode}`);
     });
@@ -98,6 +107,7 @@ export default function Game() {
       socket.off('round_ended');
       socket.off('all_answers_submitted');
       socket.off('scores_updated');
+      socket.off('win_found');
       socket.off('showing_results');
     };
   }, [navigate, setPrompt, setCurrentRound, setGamePhase, user.roomCode]);

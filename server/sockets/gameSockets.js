@@ -128,14 +128,6 @@ module.exports = (io) => {
           let updatedRound = await appendAnswerToRound(roundId, answerData.id);
 
           const playersInRoom = await getPlayersInRoom(roomCode);
-          console.log(
-            '----------- gameSocket / submit_answer info --------------------- ',
-            {
-              answerData,
-              updatedRound,
-              playersInRoom,
-            }
-          );
 
           // TODO: Maybe send down answerIds, then back 'answerIds' with calculate_scores event
           // So do not have to perform a get round DB look up.
@@ -153,6 +145,11 @@ module.exports = (io) => {
       try {
         const updatedUsers = await calculateScores(roundId);
         io.to(roomCode).emit('scores_updated', { users: updatedUsers });
+
+        const winningUsers = await checkForWinners(updatedUsers);
+        if (winningUsers.length > 0) {
+          io.to(roomCode).emit('win_found', { winningUsers });
+        }
       } catch (error) {
         console.error(error);
       }
@@ -248,4 +245,17 @@ const calculateScores = async function (roundId) {
   } catch (error) {
     console.error('Error calculating score for round:  ', error);
   }
+};
+
+/**
+ * Filters out for users that has total score >= PointsRequiredToWin
+ * @param {[object]} - array users
+ * @returns {array} - user objects
+ * {userId: {username,roomCode, totalScore}} for quick lookup
+ */
+const checkForWinners = async function (users, roomCode) {
+  //TODO: Set to 25, or make it configurable, make new column in Users table.
+  let winningUsers = users.filter((user) => user.totalScore >= 5);
+  // .map((user) => user.id);
+  return winningUsers;
 };

@@ -5,8 +5,27 @@ import socket from '../socket';
 
 export default function Result() {
   const navigate = useNavigate();
-  const { user, players, gamePhase, setPrompt, setCurrentRound, setGamePhase } =
-    useGameContext();
+  const {
+    user,
+    setUser,
+    players,
+    gamePhase,
+    winningUsers,
+    setPrompt,
+    setCurrentRound,
+    setGamePhase,
+  } = useGameContext();
+
+  const handleQuitGame = () => {
+    socket.emit(''); //
+  };
+
+  const handlePlayAgain = () => {
+    // [ ] RESET scores of current players to 0
+    setUser({}); // TO show landing page, instead of Lobby
+    setGamePhase('waiting');
+    navigate('/');
+  };
 
   //Only available to Host, so only emits ONE event
   const handleStartRound = (e) => {
@@ -49,11 +68,39 @@ export default function Result() {
       </div>
       {/* show players and score */}
 
-      {/* HOST - show next round button */}
-      {user.isHost ? (
-        <button onClick={handleStartRound}>Start Round</button>
+      {/* WIN has occured  - GAME END*/}
+      {winningUsers.length > 0 ? (
+        <>
+          {/* Show User IS the winner */}
+          {winningUsers.map((user) => user.id).includes(user.id) ? (
+            <div>
+              <h2> YOU WIN!!! 🎉</h2>
+            </div>
+          ) : (
+            <div>
+              <h3>
+                {' '}
+                {winningUsers.map((user) => user.username).join(', ')} have won
+                the game!{' '}
+              </h3>
+            </div>
+          )}
+          {/* Display quit and play again button */}
+          <div>
+            <button onClick={handleQuitGame}>Quit</button>
+            <button onClick={handlePlayAgain}>Play Again</button>
+          </div>
+        </>
       ) : (
-        <div>Waiting for HOST to start next round</div>
+        <>
+          {/* Game is still in prgoress*/}
+          {/* HOST - show next round button */}
+          {user.isHost ? (
+            <button onClick={handleStartRound}>Start Round</button>
+          ) : (
+            <div>Waiting for HOST to start next round</div>
+          )}
+        </>
       )}
     </>
   );

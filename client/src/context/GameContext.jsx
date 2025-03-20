@@ -19,6 +19,7 @@ export const GameProvider = ({ children }) => {
   const [players, setPlayers] = useState([]);
   const [gamePhase, setGamePhase] = useState('waiting');
   const [currentRound, setCurrentRound] = useState(null);
+  const [winningUsers, setWinningUsers] = useState([]);
 
   const [roomStatus, setRoomStatus] = useState('waiting');
 
@@ -73,6 +74,8 @@ export const GameProvider = ({ children }) => {
         currentRound,
         setCurrentRound,
         handleScoreUpdate,
+        winningUsers,
+        setWinningUsers,
       }}
     >
       {children}
