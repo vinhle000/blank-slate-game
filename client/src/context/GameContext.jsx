@@ -19,7 +19,7 @@ export const GameProvider = ({ children }) => {
   const [players, setPlayers] = useState([]);
   const [gamePhase, setGamePhase] = useState('waiting');
   const [currentRound, setCurrentRound] = useState(null);
-  const [winningUsers, setWinningUsers] = useState([]);
+  const [winningUsers, setWinningUsers] = useState(null);
 
   const [roomStatus, setRoomStatus] = useState('waiting');
 

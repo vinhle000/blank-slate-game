@@ -11,19 +11,21 @@ export default function Result() {
     players,
     gamePhase,
     winningUsers,
+    setWinningUsers,
     setPrompt,
     setCurrentRound,
     setGamePhase,
   } = useGameContext();
 
   const handleQuitGame = () => {
+    setUser({}); // TO show landing page, instead of Lobby
     socket.emit(''); //
   };
 
   const handlePlayAgain = () => {
-    // [ ] RESET scores of current players to 0
-    setUser({}); // TO show landing page, instead of Lobby
     setGamePhase('waiting');
+    setCurrentRound(null);
+    setWinningUsers(null);
     navigate('/');
   };
 
@@ -33,6 +35,7 @@ export default function Result() {
     socket.emit('next_round', user.roomCode);
   };
 
+  // IF HOST starts game and users are still on Results page, they will automatically be joined in the next game
   useEffect(() => {
     socket.on('prompt_select_phase_started', ({ currentRound, prompt }) => {
       setGamePhase('prompt_select_phase');
@@ -47,7 +50,7 @@ export default function Result() {
   }, [setGamePhase, setCurrentRound, setPrompt, setPrompt, navigate]);
   return (
     <>
-      <h1>Round Results</h1>
+      <h1>Results</h1>
       <h2>
         Player: <span style={{ color: 'pink' }}>{user.username}</span>
       </h2>
@@ -69,7 +72,7 @@ export default function Result() {
       {/* show players and score */}
 
       {/* WIN has occured  - GAME END*/}
-      {winningUsers.length > 0 ? (
+      {winningUsers ? (
         <>
           {/* Show User IS the winner */}
           {winningUsers.map((user) => user.id).includes(user.id) ? (
@@ -78,10 +81,15 @@ export default function Result() {
             </div>
           ) : (
             <div>
+              {' '}
+              {/* Show User is NOT the winner */}
               <h3>
                 {' '}
-                {winningUsers.map((user) => user.username).join(', ')} have won
-                the game!{' '}
+                Players{' '}
+                <span style={{ color: 'red' }}>
+                  {winningUsers.map((user) => user.username).join(', ')}
+                </span>{' '}
+                have won the game!{' '}
               </h3>
             </div>
           )}

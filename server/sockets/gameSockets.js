@@ -6,6 +6,7 @@ const {
   getUser,
   createUser,
   updateScoresInDatabase,
+  resetUserScores,
 } = require('../models/usersModel');
 const { updateRoom } = require('../models/roomsModel');
 const { createAnswer, getAnswersByIds } = require('../models/answerModel');
@@ -33,8 +34,10 @@ module.exports = (io) => {
       }
     });
 
-    socket.on('game_start', async (roomCode) => {
+    socket.on('game_start', async ({ roomCode, players }) => {
       try {
+        // reset user scores
+        await resetUserScores(players);
         let status = 'in_progress';
         let gamePhase = 'prompt_select_phase';
         const updatedRoom = await updateRoom(roomCode, {
@@ -49,6 +52,7 @@ module.exports = (io) => {
           prompt,
           currentRound,
         });
+        console.log('TEST - on game_start > sent prompt_select_phase_started');
       } catch (error) {
         console.error(`Socket 'game_start' error: `, error);
       }
@@ -140,7 +144,7 @@ module.exports = (io) => {
         }
       }
     );
-    // TODO: Find winner here?
+
     socket.on('calculate_scores', async ({ roomCode, roundId }) => {
       try {
         const updatedUsers = await calculateScores(roundId);
@@ -149,17 +153,31 @@ module.exports = (io) => {
         const winningUsers = await checkForWinners(updatedUsers);
         if (winningUsers.length > 0) {
           io.to(roomCode).emit('win_found', { winningUsers });
+          console.log(`🏆 Game over! Winners: `, winningUsers);
+          return; // Stop game progression if we have winners
         }
+        // Want players to be able to display and share answers before we go to results page
+        // console.log("🔄 No winners yet. Moving to next round...");
+        // io.to(roomCode).emit('show_results');
       } catch (error) {
         console.error(error);
       }
     });
 
-    socket.on('show_results', async ({ roomCode }) => {
+    // NOTE: socket.on 'show_results' Need to reset room status back to 'waiting' upon Restarting game
+    // On show_result  -  room =  {
+    //   id: 'f5e32bbe-fc3d-48bd-b6cc-3a15aa4ae679',
+    //   roomCode: 'CY79L',
+    //   hostId: '9afb1b70-2cbd-48b6-9d1d-935621abec47',
+    //   status: 'in_progress',    <---------- HANDLE room status, or remove if not necessary
+    //   gamePhase: 'game_complete' <------------ Only updating gamePhase
+    socket.on('show_results', async ({ roomCode, winningUsers }) => {
       try {
-        const room = await updateRoom(roomCode, { gamePhase: 'results_phase' });
+        const status = winningUsers ? 'complete' : 'in_progress'; // roomStatus Currently NOT serving much functionality
+        const gamePhase = winningUsers ? 'game_complete' : 'results_phase';
+        const room = await updateRoom(roomCode, { status, gamePhase });
         console.log('On show_result  -  room = ', room);
-        io.to(roomCode).emit('showing_results');
+        io.to(roomCode).emit('showing_results', { gamePhase });
       } catch (error) {
         console.error('Error with show_result broadcast: ', error);
       }
@@ -256,6 +274,6 @@ const calculateScores = async function (roundId) {
 const checkForWinners = async function (users, roomCode) {
   //TODO: Set to 25, or make it configurable, make new column in Users table.
   let winningUsers = users.filter((user) => user.totalScore >= 5);
-  // .map((user) => user.id);
+  return winningUsers;
   return winningUsers;
 };

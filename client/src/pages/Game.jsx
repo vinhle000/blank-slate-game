@@ -14,6 +14,7 @@ export default function Game() {
     currentRound,
     setCurrentRound,
     setPlayers,
+    winningUsers,
     setWinningUsers,
   } = useGameContext();
 
@@ -44,11 +45,9 @@ export default function Game() {
     }); // manually ends round, instead of waiting for Timer
   };
 
-  // NOTE: Currently any player that presses "Next" button
-  // will cause all players to go to the results screen
-  // - Maybe change to host ONLY to have this button
+  // NOTE: HOST is only transition from display_answers -> show_results phase
   const handleNext = async () => {
-    socket.emit('show_results', { roomCode: user.roomCode });
+    socket.emit('show_results', { roomCode: user.roomCode, winningUsers });
   };
 
   useEffect(() => {
@@ -93,11 +92,12 @@ export default function Game() {
     });
 
     socket.on('win_found', ({ winningUsers }) => {
-      console.log(' WINNER(S) found!!! - ', winningUsers);
-      setWinningUsers(winningUsers);
+      console.log('🏆 Winner(s) found! Storing in context and Ending game');
+      setWinningUsers(winningUsers); //  Store winners in context
     });
 
-    socket.on('showing_results', () => {
+    socket.on('showing_results', ({ gamePhase }) => {
+      setGamePhase(gamePhase);
       navigate(`/results/${user.roomCode}`);
     });
 
@@ -190,9 +190,11 @@ export default function Game() {
           </label>
 
           <>
-            <div>
-              <button onClick={handleNext}>Next</button>
-            </div>
+            {user.isHost && (
+              <div>
+                <button onClick={handleNext}>Next</button>
+              </div>
+            )}
           </>
         </>
       )}

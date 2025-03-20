@@ -35,7 +35,7 @@ export default function Lobby() {
   };
 
   const handleStartGame = async () => {
-    socket.emit('game_start', user.roomCode);
+    socket.emit('game_start', { roomCode: user.roomCode, players: players });
   };
 
   useEffect(() => {

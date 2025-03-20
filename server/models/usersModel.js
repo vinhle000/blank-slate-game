@@ -56,7 +56,7 @@ async function createUser(userId, username, roomCode, isHost) {
 //
 /**
  *  Bulk Update query update for user.total_scores
- * @param {{userId: score}}  scoreMap - Scores by userId for this round to add to the total_score
+ * @param {{userId: score}}  scoreMap - Scores by userId, dependent of score calculations prior
  * @returns {Promise<object>} - array of Users with updated total_scores
  */
 const updateScoresInDatabase = async (scoreMap) => {
@@ -76,7 +76,6 @@ const updateScoresInDatabase = async (scoreMap) => {
     `;
 
     // console.log('Generated SQL Query:', query); // Debug query string
-
     const result = await pool.query(query);
 
     console.log('Scores updated successfully');
@@ -86,6 +85,33 @@ const updateScoresInDatabase = async (scoreMap) => {
   }
 };
 
+/**
+ *  Bulk query update for resetting user.total_scores = 0
+ * @param {[<object>]} users - array of users in room
+ * @returns {Promise<object>} - array of users with updated total_scores
+ */
+const resetUserScores = async (users) => {
+  const userIds = users.map((user) => user.id);
+  console.log(
+    'userModel/resetUserScores -- userIds to be RESET ----> ',
+    Array.isArray(userIds)
+  );
+  try {
+    const query = `
+      UPDATE users
+      SET total_score = 0
+      WHERE id = ANY($1::UUID[])
+      RETURNING *
+    `;
+    const result = await pool.query(query, [userIds]);
+
+    console.log('User scores reset to 0 successfully');
+    return snakeToCamel(result.rows);
+  } catch (error) {
+    console.error('Error resetting user scores: ', error);
+    throw error;
+  }
+};
 //TODO: fix function to query for supplying roomController.js -> getPlayersInRoom()
 /**
  * Gets list Users(Players) in room by roomCode
@@ -115,5 +141,6 @@ module.exports = {
   getUser,
   createUser,
   updateScoresInDatabase,
+  resetUserScores,
   // getUsersByRoomCode,
 };
