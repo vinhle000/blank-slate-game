@@ -7,6 +7,7 @@ const {
   createUser,
   updateScoresInDatabase,
   resetUserScores,
+  removeUser,
 } = require('../models/usersModel');
 const { updateRoom } = require('../models/roomsModel');
 const { createAnswer, getAnswersByIds } = require('../models/answerModel');
@@ -27,10 +28,32 @@ module.exports = (io) => {
     socket.on('join_room', async ({ roomCode, userId }) => {
       socket.join(roomCode);
       const user = await getUser(userId);
+      const updatedPlayers = await getPlayersInRoom(roomCode);
 
       if (!!user && user?.roomCode) {
-        io.to(roomCode).emit('player_joined', user);
+        io.to(roomCode).emit('player_list_updated', {
+          players: updatedPlayers,
+        });
         console.log(`🛠 Player ${user.username} joined room ${roomCode}`);
+      }
+    });
+
+    socket.on('player_left', async ({ roomCode, userId }) => {
+      try {
+        console.log(`🚪 Player ${userId} left room ${roomCode}`);
+        //TODO //FIX: Handle edge case where Host exits the room
+        // - Still Players in room, Reassign host to one of players in room
+        // - No Players left and Host leaves, delete room
+        let removedUser = await removeUser(userId); //
+        const updatedPlayers = await getPlayersInRoom(roomCode);
+
+        if (!!removedUser) {
+          io.to(roomCode).emit('player_list_updated', {
+            players: updatedPlayers,
+          });
+        }
+      } catch (error) {
+        console.error('Error handling player exit: ', error);
       }
     });
 

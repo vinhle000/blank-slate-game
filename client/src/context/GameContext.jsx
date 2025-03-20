@@ -50,14 +50,15 @@ export const GameProvider = ({ children }) => {
   // }, [handleScoreUpdate, gamePhase]); // Only runs when gamePhase changes
 
   useEffect(() => {
-    socket.on('player_joined', () => {
-      fetchAndSetPlayers(user.roomCode);
+    socket.on('player_list_updated', ({ players }) => {
+      // fetchAndSetPlayers(user.roomCode); // fetch/get players is done on server socket
+      setPlayers(players);
     });
 
     return () => {
-      socket.off('player_joined');
+      socket.off('player_list_updated');
     };
-  }, [fetchAndSetPlayers, user.roomCode]);
+  }, [setPlayers]);
 
   return (
     <GameContext.Provider

@@ -1,3 +1,4 @@
+import Landing from './pages/Landing';
 import Lobby from './pages/Lobby';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import Game from './pages/Game';
@@ -10,7 +11,8 @@ function App() {
       <GameProvider>
         <BrowserRouter>
           <Routes>
-            <Route path='/' element={<Lobby />} />
+            <Route path='/' element={<Landing />} />
+            <Route path='/lobby/:roomCode' element={<Lobby />} />
             <Route path='/game/:roomCode' element={<Game />} />
             <Route path='/results/:roomCode' element={<Result />} />
           </Routes>

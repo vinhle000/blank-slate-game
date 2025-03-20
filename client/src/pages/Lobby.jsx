@@ -17,27 +17,16 @@ export default function Lobby() {
     setGamePhase,
     setCurrentRound,
   } = useGameContext();
-
-  const [inputRoomCode, setInputRoomCode] = useState('');
-  const [inputUsername, setInputUsername] = useState('');
   const navigate = useNavigate();
-
-  const handleCreateRoom = async () => {
-    const user = await createRoom(inputUsername);
-    setUser(user);
-    socket.emit('join_room', { roomCode: user.roomCode, userId: user.id }); // Room code was assigned in server endpoint when saving to DB
-  };
-
-  const handleJoinRoom = async () => {
-    const user = await joinRoom(inputUsername, inputRoomCode);
-    setUser(user);
-    socket.emit('join_room', { roomCode: inputRoomCode, userId: user.id }); // Room code is from input text field
-  };
 
   const handleStartGame = async () => {
     socket.emit('game_start', { roomCode: user.roomCode, players: players });
   };
-
+  const handleExitGame = async () => {
+    socket.emit('player_left', { roomCode: user.roomCode, userId: user.id });
+    setUser(null);
+    navigate('/'); // redirect back to landing page
+  };
   useEffect(() => {
     fetchAndSetPlayers(user.roomCode); //fetch upon component mounts
 
@@ -54,61 +43,27 @@ export default function Lobby() {
   }, [fetchAndSetPlayers, navigate, user]);
 
   // debug logs
-  useEffect(() => {
-    console.log(' ------- lobby logs ---- s');
-    console.log('prompt:', prompt);
-    console.log('gamePhase:', gamePhase);
-  }, [prompt, gamePhase]);
+  // useEffect(() => {
+  //   console.log(' ------- lobby logs ---- s');
+  //   console.log('prompt:', prompt);
+  //   console.log('gamePhase:', gamePhase);
+  // }, [prompt, gamePhase]);
   return (
     <>
-      {user?.id ? (
-        <>
-          <div>LOBBY page</div>
-          <h2>
-            Name:
-            <span style={{ color: 'grey' }}> {inputUsername}</span>
-          </h2>
-          <h2>Room: {user.roomCode}</h2>
-          <h3>Players In Game:</h3>
-          {players.map((player) => (
-            <li key={player.id}>{player.username}</li>
-          ))}
-          {user.isHost ? (
-            <>
-              {console.log('player data', players)}
-              <button onClick={handleStartGame}>Start Game</button>
-            </>
-          ) : (
-            <p>Waiting for host to start game...</p>
-          )}
-        </>
+      <h2>LOBBY</h2>
+      <h3>Room Code: {user.roomCode}</h3>
+      <h3>Players in Room:</h3>
+      <ul>
+        {players.map((player) => (
+          <li key={player.id}>{player.username}</li>
+        ))}
+      </ul>
+      {user.isHost ? (
+        <button onClick={handleStartGame}>Start Game</button>
       ) : (
-        <>
-          <h2>Blank Slate</h2>
-          <div>
-            <input
-              type='text'
-              placeholder='Player Name'
-              value={inputUsername}
-              onChange={(e) => setInputUsername(e.target.value)}
-            />
-          </div>
-          <div>
-            <input
-              type='text'
-              placeholder='Room Code'
-              value={inputRoomCode}
-              onChange={(e) => setInputRoomCode(e.target.value)}
-            />
-            <div>
-              <button onClick={handleJoinRoom}>Join Room</button>
-            </div>
-          </div>
-          <div>
-            <button onClick={handleCreateRoom}>Create Room </button>
-          </div>
-        </>
+        <p>Waiting for host to start the game...</p>
       )}
+      <button onClick={handleExitGame}>Exit Room</button> {/* ✅ Exit Button */}
     </>
   );
 }

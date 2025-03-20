@@ -112,6 +112,34 @@ const resetUserScores = async (users) => {
     throw error;
   }
 };
+
+/**
+ * Delete user from DB, they have left room or quit game
+ * @param {string} userId - user UUID
+ * @returns {Promise<object|null>} - The deleted user record (optional) or null if not found.
+ */
+const removeUser = async (userId) => {
+  try {
+    const result = await pool.query(
+      `
+      DELETE FROM users
+      WHERE id = $1
+      RETURNING *;
+      `,
+      [userId]
+    );
+
+    if (result.rowCount === 0) {
+      console.warn(`⚠️ No user found with ID: ${userId}`);
+      return null;
+    }
+
+    return snakeToCamel(result.rows[0]);
+  } catch (error) {
+    console.error('Error removing user from DB: ', error);
+    throw error;
+  }
+};
 //TODO: fix function to query for supplying roomController.js -> getPlayersInRoom()
 /**
  * Gets list Users(Players) in room by roomCode
@@ -142,5 +170,6 @@ module.exports = {
   createUser,
   updateScoresInDatabase,
   resetUserScores,
+  removeUser,
   // getUsersByRoomCode,
 };
