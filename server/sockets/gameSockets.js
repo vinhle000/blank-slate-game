@@ -173,9 +173,9 @@ module.exports = (io) => {
     //   gamePhase: 'game_complete' <------------ Only updating gamePhase
     socket.on('show_results', async ({ roomCode, winningUsers }) => {
       try {
-        const status = winningUsers ? 'complete' : 'in_progress'; // roomStatus Currently NOT serving much functionality
+        // const status = winningUsers ? 'complete' : 'in_progress'; // roomStatus Currently NOT serving much functionality
         const gamePhase = winningUsers ? 'game_complete' : 'results_phase';
-        const room = await updateRoom(roomCode, { status, gamePhase });
+        const room = await updateRoom(roomCode, { gamePhase });
         console.log('On show_result  -  room = ', room);
         io.to(roomCode).emit('showing_results', { gamePhase });
       } catch (error) {
