@@ -18,15 +18,16 @@ export default function Result() {
   } = useGameContext();
 
   const handleQuitGame = () => {
-    setUser({}); // TO show landing page, instead of Lobby
-    socket.emit(''); //
+    socket.emit('player_left', { roomCode: user.roomCode, userId: user.id });
+    setUser(null);
+    navigate('/'); // redirect back to landing page
   };
 
   const handlePlayAgain = () => {
     setGamePhase('waiting');
     setCurrentRound(null);
     setWinningUsers(null);
-    navigate('/');
+    navigate(`/lobby/${user.roomCode}`);
   };
 
   //Only available to Host, so only emits ONE event
