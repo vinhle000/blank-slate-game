@@ -16,10 +16,12 @@ export default function Lobby() {
     gamePhase,
     setGamePhase,
     setCurrentRound,
+    setWinningUsers,
   } = useGameContext();
   const navigate = useNavigate();
 
   const handleStartGame = async () => {
+    setWinningUsers(null);
     socket.emit('game_start', { roomCode: user.roomCode, players: players });
   };
   const handleExitGame = async () => {
