@@ -150,8 +150,11 @@ module.exports = (io) => {
           if (!user) {
             throw Error('user id not found');
           }
+
+          const cleanedAnswer = answer.trim().toLowerCase(); // For consistent storing, scoring, and displaying
+
           // Create and persist answer and append to current round
-          let answerData = await createAnswer(roundId, userId, answer);
+          let answerData = await createAnswer(roundId, userId, cleanedAnswer);
           let updatedRound = await appendAnswerToRound(roundId, answerData.id);
 
           const playersInRoom = await getPlayersInRoom(roomCode);
