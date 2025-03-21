@@ -65,7 +65,7 @@ export default function Lobby() {
           <h3 className='text-xl mb-1'>Players:</h3>
           <ul className=''>
             {players.map((player) => (
-              <li className='space-y-1' key={player.id}>
+              <li className='p-6 space-y-1' key={player.id}>
                 {player.username}
               </li>
             ))}

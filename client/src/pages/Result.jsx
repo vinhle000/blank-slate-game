@@ -3,6 +3,9 @@ import { useNavigate } from 'react-router-dom';
 import { useGameContext } from '../context/GameContext';
 import socket from '../socket';
 
+import { Card } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+
 export default function Result() {
   const navigate = useNavigate();
   const {
@@ -50,67 +53,72 @@ export default function Result() {
     };
   }, [setGamePhase, setCurrentRound, setPrompt, setPrompt, navigate]);
   return (
-    <>
-      <h1>Results</h1>
-      <h2>
-        Player: <span style={{ color: 'pink' }}>{user.username}</span>
-      </h2>
-      <h3>
-        Room: <span style={{ color: 'yellow' }}>{user.roomCode}</span>
-      </h3>
-      <h3>Scores</h3>
-
-      <div>
-        <ul>
-          {players.map((player) => (
-            <li key={player.id}>
-              <span>{player.username}</span>
-              <span> {player.totalScore}</span>
-            </li>
-          ))}
-        </ul>
+    <div className='min-h-screen flex flex-col items-center justify-center'>
+      <div className='header-place-holder flex flex-row justify-between'>
+        <span className='p-8 bg-red-400'>
+          {user.isHost && <span>Host: </span>} {user.username}
+        </span>
+        <span className='p-3 bg-blue-400'>{user.roomCode}</span>
       </div>
-      {/* show players and score */}
 
-      {/* WIN has occured  - GAME END*/}
-      {winningUsers ? (
-        <>
-          {/* Show User IS the winner */}
-          {winningUsers.map((user) => user.id).includes(user.id) ? (
-            <div>
-              <h2> YOU WIN!!! 🎉</h2>
-            </div>
-          ) : (
-            <div>
-              {' '}
-              {/* Show User is NOT the winner */}
-              <h3>
+      <Card className='p-6 w-full max-w-md'>
+        <h3 className='text-xl mb-1'>Scores</h3>
+
+        <div>
+          <ul>
+            {players.map((player) => (
+              <li
+                className='p-6 flex flex-row items-center justify-between space-y-1'
+                key={player.id}
+              >
+                <span>{player.username}</span>
+                <span> {player.totalScore}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+        {/* show players and score */}
+
+        {/* WIN has occured  - GAME END*/}
+        {winningUsers ? (
+          <>
+            {/* Show User IS the winner */}
+            {winningUsers.map((user) => user.id).includes(user.id) ? (
+              <div>
+                <h2 className='font-bold'> YOU WIN!!! 🎉</h2>
+              </div>
+            ) : (
+              <div>
                 {' '}
-                Players{' '}
-                <span style={{ color: 'red' }}>
-                  {winningUsers.map((user) => user.username).join(', ')}
-                </span>{' '}
-                have won the game!{' '}
-              </h3>
+                {/* Show User is NOT the winner */}
+                <h3>
+                  {' '}
+                  Player(s){' '}
+                  <span className='font-bold'>
+                    {winningUsers.map((user) => user.username).join(', ')}
+                  </span>{' '}
+                  have won the game!{' '}
+                </h3>
+              </div>
+            )}
+            {/* Display quit and play again button */}
+            <div className='flex flex-row item-center justify-around'>
+              <Button onClick={handleQuitGame}>Quit</Button>
+              <Button onClick={handlePlayAgain}>Play Again</Button>
             </div>
-          )}
-          {/* Display quit and play again button */}
-          <div>
-            <button onClick={handleQuitGame}>Quit</button>
-            <button onClick={handlePlayAgain}>Play Again</button>
-          </div>
-        </>
-      ) : (
-        <>
-          {/* Game is still in prgoress*/}
-          {/* HOST - show next round button */}
-          {user.isHost ? (
-            <button onClick={handleStartRound}>Start Round</button>
-          ) : (
-            <div>Waiting for HOST to start next round</div>
-          )}
-        </>
-      )}
-    </>
+          </>
+        ) : (
+          <>
+            {/* Game is still in prgoress*/}
+            {/* HOST - show next round button */}
+            {user.isHost ? (
+              <Button onClick={handleStartRound}>Start Round</Button>
+            ) : (
+              <div>Waiting for HOST to start next round</div>
+            )}
+          </>
+        )}
+      </Card>
+    </div>
   );
 }
