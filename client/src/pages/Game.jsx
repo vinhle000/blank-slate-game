@@ -132,15 +132,14 @@ export default function Game() {
         {gamePhase === 'prompt_select_phase' && (
           <>
             {user.isHost ? (
-              <>
-                <p className='text-lg font-bold'>{prompt}</p>
-                <div>
+              <div className='mt-6 flex flex-col space-y-4'>
+                <Card className='items-center text-lg font-bold'>{prompt}</Card>
+                <div className='mt-10 space-y-5 flex flex-col'>
                   <Button onClick={handleChangePrompt}>Change Prompt</Button>
-                </div>
-                <div>
+
                   <Button onClick={handleConfirm}>Confirm</Button>
                 </div>
-              </>
+              </div>
             ) : (
               <>
                 <div>
