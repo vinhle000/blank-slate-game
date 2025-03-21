@@ -61,7 +61,7 @@ export default function Lobby() {
           </span>
           <span className='p-3 bg-blue-400'>{user.roomCode}</span>
         </div>
-        <Card className='p-4 w-full max-w-md'>
+        <Card className='p-6 w-full max-w-md'>
           <h3 className='text-xl mb-1'>Players:</h3>
           <ul className=''>
             {players.map((player) => (
