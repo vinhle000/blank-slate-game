@@ -4,6 +4,7 @@ import { useGameContext } from '../context/GameContext';
 import socket from '../socket';
 import { createRoom, joinRoom, fetchPlayers } from '../services/roomService';
 
+import Header from '@/components/Header';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 
@@ -52,15 +53,14 @@ export default function Lobby() {
   //   console.log('prompt:', prompt);
   //   console.log('gamePhase:', gamePhase);
   // }, [prompt, gamePhase]);
+
+  if (!user) return <div>Loading...</div>;
+
   return (
     <>
       <div className='min-h-screen flex flex-col items-center justify-center'>
-        <div className='header-place-holder flex flex-row justify-between'>
-          <span className='p-8 bg-red-400'>
-            {user.isHost && <span>Host: </span>} {user.username}
-          </span>
-          <span className='p-3 bg-blue-400'>{user.roomCode}</span>
-        </div>
+        <Header username={user.username} roomCode={user.roomCode} />
+
         <Card className='p-6 w-full max-w-md'>
           <h3 className='text-xl mb-1'>Players:</h3>
           <ul className=''>

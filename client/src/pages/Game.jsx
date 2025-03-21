@@ -3,6 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import { useGameContext } from '../context/GameContext';
 import socket from '../socket';
 
+import Header from '@/components/Header';
+
 import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -68,7 +70,6 @@ export default function Game() {
 
     socket.on('round_ended', async () => {
       console.log('Round ended! Submitting answer and updating scores...');
-
       socket.emit('submit_answer', {
         roomCode: user.roomCode,
         roundId: currentRound.id,
@@ -125,15 +126,7 @@ export default function Game() {
 
   return (
     <div className='min-h-screen flex flex-col items-center justify-center'>
-      <div className='header-place-holder flex flex-row justify-between'>
-        <span className='p-8 bg-red-400'>
-          {user.isHost && <span>Host: </span>} {user.username}
-        </span>
-        <div>
-          <span>Round# {currentRound.roundNumber}</span>
-        </div>
-        <span className='p-3 bg-blue-400'>{user.roomCode}</span>
-      </div>
+      <Header username={user.username} roomCode={user.roomCode} />
 
       <Card className='p-6 w-full max-w-md'>
         {gamePhase === 'prompt_select_phase' && (
