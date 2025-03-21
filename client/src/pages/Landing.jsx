@@ -4,6 +4,9 @@ import { useGameContext } from '../context/GameContext';
 import socket from '../socket';
 import { createRoom, joinRoom } from '../services/roomService';
 
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+
 export default function Landing() {
   const { setUser } = useGameContext();
   const [inputRoomCode, setInputRoomCode] = useState('');
@@ -25,26 +28,31 @@ export default function Landing() {
   };
 
   return (
-    <>
-      <h2>Blank Slate</h2>
+    <div className='flex flex-col items-center justify-center min-h-screen text-center'>
+      <h1 className='text-4xl font-bold mb-6'>Blank Slate</h1>
+      <p>Join a room or start a new game!</p>
       <div>
-        <input
-          type='text'
-          placeholder='Player Name'
-          value={inputUsername}
-          onChange={(e) => setInputUsername(e.target.value)}
-        />
+        <div className='mt-6 flex flex-col space-y-4 w-full max-w-sm'>
+          <Input
+            type='text'
+            placeholder='Player Name'
+            value={inputUsername}
+            onChange={(e) => setInputUsername(e.target.value)}
+            className='p-3 rounded-md '
+          />
+        </div>
       </div>
-      <div>
-        <input
+      <div className='mt-6 flex flex-col space-y-4 w-full max-w-sm'>
+        <Input
           type='text'
           placeholder='Room Code'
           value={inputRoomCode}
           onChange={(e) => setInputRoomCode(e.target.value)}
+          className='p-3 rounded-md'
         />
-        <button onClick={handleJoinRoom}>Join Room</button>
+        <Button onClick={handleJoinRoom}>Join Room</Button>
+        <Button onClick={handleCreateRoom}>Create Room</Button>
       </div>
-      <button onClick={handleCreateRoom}>Create Room</button>
-    </>
+    </div>
   );
 }

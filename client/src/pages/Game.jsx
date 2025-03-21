@@ -3,6 +3,12 @@ import { useNavigate } from 'react-router-dom';
 import { useGameContext } from '../context/GameContext';
 import socket from '../socket';
 
+import Header from '@/components/Header';
+
+import { Card } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
+
 export default function Game() {
   const navigate = useNavigate();
   const {
@@ -64,7 +70,6 @@ export default function Game() {
 
     socket.on('round_ended', async () => {
       console.log('Round ended! Submitting answer and updating scores...');
-
       socket.emit('submit_answer', {
         roomCode: user.roomCode,
         roundId: currentRound.id,
@@ -120,84 +125,77 @@ export default function Game() {
   // }, [currentRound, prompt, gamePhase]);
 
   return (
-    <>
-      <div>
-        GAME <span>Round# {currentRound.roundNumber}</span>
-      </div>
-      <h2>
-        Player: <span style={{ color: 'pink' }}>{user.username}</span>
-      </h2>
-      <h3>
-        Room: <span style={{ color: 'yellow' }}>{user.roomCode}</span>
-      </h3>
+    <div className='min-h-screen flex flex-col items-center justify-center'>
+      <Header username={user.username} roomCode={user.roomCode} />
 
-      {gamePhase === 'prompt_select_phase' && (
-        <>
-          <div> Prompt select phase </div>
-          {user.isHost ? (
-            <>
-              <div>{prompt}</div>
-              <div>
-                <button onClick={handleChangePrompt}>Change Prompt</button>
-              </div>
-              <div>
-                <button onClick={handleConfirm}>Confirm</button>
-              </div>
-            </>
-          ) : (
-            <>
-              <div>
-                <p>Waiting for host to confirm prompt for game...</p>
-              </div>
-            </>
-          )}
-        </>
-      )}
-
-      {gamePhase === 'answer_phase' && (
-        <>
-          <label>
-            <span>{prompt}</span>
-
-            <input
-              placeholder='input your answer'
-              value={answer}
-              onChange={handleInputChange}
-            />
-          </label>
-
-          {user.isHost ? (
-            <>
-              <div>
-                <button onClick={handleEndRound}>End Round</button>
-              </div>
-            </>
-          ) : (
-            <>
-              <div>
-                <p>place holder, shows on NON host players</p>
-              </div>
-            </>
-          )}
-        </>
-      )}
-
-      {gamePhase === 'display_answer_phase' && (
-        <>
-          <label>
-            <span>{prompt}</span>
-            <span style={{ color: 'green' }}>{answer}</span>
-          </label>
-
+      <Card className='p-6 w-full max-w-md'>
+        {gamePhase === 'prompt_select_phase' && (
           <>
-            {user.isHost && (
-              <div>
-                <button onClick={handleNext}>Next</button>
+            {user.isHost ? (
+              <div className='mt-6 flex flex-col space-y-4'>
+                <Card className='items-center text-lg font-bold'>{prompt}</Card>
+                <div className='mt-10 space-y-5 flex flex-col'>
+                  <Button onClick={handleChangePrompt}>Change Prompt</Button>
+
+                  <Button onClick={handleConfirm}>Confirm</Button>
+                </div>
               </div>
+            ) : (
+              <>
+                <div>
+                  <p>Waiting for host to confirm prompt for game...</p>
+                </div>
+              </>
             )}
           </>
-        </>
-      )}
-    </>
+        )}
+
+        {gamePhase === 'answer_phase' && (
+          <>
+            <div className='flex flex-row'>
+              <p>{prompt}</p>
+
+              <Input
+                placeholder='input your answer'
+                value={answer}
+                onChange={handleInputChange}
+                className='inline'
+              />
+            </div>
+
+            {user.isHost ? (
+              <>
+                <div>
+                  <Button onClick={handleEndRound}>End Round</Button>
+                </div>
+              </>
+            ) : (
+              <>
+                <div>
+                  <p></p>
+                </div>
+              </>
+            )}
+          </>
+        )}
+
+        {gamePhase === 'display_answer_phase' && (
+          <>
+            <div>
+              <span>{prompt}</span>
+              <span className='text-5xl'>{answer}</span>
+            </div>
+
+            <>
+              {user.isHost && (
+                <div>
+                  <Button onClick={handleNext}>Next</Button>
+                </div>
+              )}
+            </>
+          </>
+        )}
+      </Card>
+    </div>
   );
 }
