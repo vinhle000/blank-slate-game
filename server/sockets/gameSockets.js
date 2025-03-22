@@ -59,6 +59,8 @@ module.exports = (io) => {
 
     socket.on('game_start', async ({ roomCode, players }) => {
       try {
+        // send to event to GameContext, to ensure winnerUserIds is set to null for New Game
+        io.to(roomCode).emit('new_game_started');
         // reset user scores
         await resetUserScores(players);
         let status = 'in_progress';
@@ -297,9 +299,12 @@ const calculateScores = async function (roundId) {
  * @returns {array} - user objects
  * {userId: {username,roomCode, totalScore}} for quick lookup
  */
+const PointsRequiredToWin = 25; // TODO: Make this configurable by host
 const checkForWinners = async function (users, roomCode) {
   //TODO: Set to 25, or make it configurable, make new column in Users table.
-  let winningUsers = users.filter((user) => user.totalScore >= 5);
+  let winningUsers = users.filter(
+    (user) => user.totalScore >= PointsRequiredToWin
+  );
   return winningUsers;
   return winningUsers;
 };

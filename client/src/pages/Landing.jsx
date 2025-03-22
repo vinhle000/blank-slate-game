@@ -21,10 +21,14 @@ export default function Landing() {
   };
 
   const handleJoinRoom = async () => {
-    const user = await joinRoom(inputUsername, inputRoomCode);
+    const cleanedInputRoomCode = inputRoomCode.strip().toUpperCase(); //ensure input roomCode consistency
+    const user = await joinRoom(inputUsername, cleanedInputRoomCode);
     setUser(user);
-    socket.emit('join_room', { roomCode: inputRoomCode, userId: user.id });
-    navigate(`/lobby/${inputRoomCode}`); // ✅ Redirect to Lobby
+    socket.emit('join_room', {
+      roomCode: cleanedInputRoomCode,
+      userId: user.id,
+    });
+    navigate(`/lobby/${cleanedInputRoomCode}`); // ✅ Redirect to Lobby
   };
 
   return (

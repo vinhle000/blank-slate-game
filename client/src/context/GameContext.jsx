@@ -42,17 +42,13 @@ export const GameProvider = ({ children }) => {
     }
   }, [currentRound]);
 
-  // useEffect(() => {
-  //   if (gamePhase === 'display_answer_phase') {
-  //     console.log('🔄 Entering display_answer_phase, calculating scores...');
-  //     handleScoreUpdate();
-  //   }
-  // }, [handleScoreUpdate, gamePhase]); // Only runs when gamePhase changes
-
   useEffect(() => {
     socket.on('player_list_updated', ({ players }) => {
-      // fetchAndSetPlayers(user.roomCode); // fetch/get players is done on server socket
       setPlayers(players);
+    });
+
+    socket.on('new_game_started', () => {
+      setWinningUsers(null); // ensure client winning state is null for New Game
     });
 
     return () => {
