@@ -153,14 +153,19 @@ export default function Game() {
         {gamePhase === 'answer_phase' && (
           <>
             <div className='flex flex-row'>
-              <p>{prompt}</p>
+              <p className='mx-1 px-2 inline-flex items-center font-bold'>
+                {prompt.split(' ')[0]}__{' '}
+                {/* temp fix cause of extra space in .json data*/}
+              </p>
 
-              <Input
-                placeholder='input your answer'
-                value={answer}
-                onChange={handleInputChange}
-                className='inline'
-              />
+              <div className=''>
+                <Input
+                  placeholder='input your answer'
+                  value={answer}
+                  onChange={handleInputChange}
+                  // className='inline'
+                />
+              </div>
             </div>
 
             {user.isHost ? (
@@ -171,8 +176,10 @@ export default function Game() {
               </>
             ) : (
               <>
-                <div>
-                  <p></p>
+                <div className='inline-flex items-center justify-center '>
+                  <p className='text-gray-400 text-xs '>
+                    Wait for Host to end round
+                  </p>
                 </div>
               </>
             )}
@@ -181,9 +188,11 @@ export default function Game() {
 
         {gamePhase === 'display_answer_phase' && (
           <>
-            <div>
-              <span>{prompt}</span>
-              <span className='text-5xl'>{answer}</span>
+            <div className='flex flex-row items-end justify-center'>
+              <span className='text-base'>{prompt.split(' ')[0]}</span>
+              <span className='text-6xl underline decoration-[.2rem]'>
+                {answer}
+              </span>
             </div>
 
             <>
