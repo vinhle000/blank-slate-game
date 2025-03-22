@@ -21,7 +21,7 @@ export default function Landing() {
   };
 
   const handleJoinRoom = async () => {
-    const cleanedInputRoomCode = inputRoomCode.strip().toUpperCase(); //ensure input roomCode consistency
+    const cleanedInputRoomCode = inputRoomCode.trim().toUpperCase(); //ensure input roomCode consistency
     const user = await joinRoom(inputUsername, cleanedInputRoomCode);
     setUser(user);
     socket.emit('join_room', {
