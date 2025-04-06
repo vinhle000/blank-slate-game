@@ -33,7 +33,8 @@ export default function Lobby() {
     navigate('/'); // redirect back to landing page
   };
   useEffect(() => {
-    fetchAndSetPlayers(user.roomCode); //fetch upon component mounts
+    // NOTE: 4.5.25 - comment out for now, it is not needed
+    // fetchAndSetPlayers(user.roomCode); //fetch upon component mounts
 
     socket.on('prompt_select_phase_started', ({ prompt, currentRound }) => {
       setPrompt(prompt);

@@ -6,6 +6,16 @@ import { createRoom, joinRoom } from '../services/roomService';
 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+// import { Label } from '@/components/ui/label';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/ui/dialog';
 
 export default function Landing() {
   const { setUser } = useGameContext();
@@ -47,15 +57,48 @@ export default function Landing() {
         </div>
       </div>
       <div className='mt-6 flex flex-col space-y-4 w-full max-w-sm'>
-        <Input
+        {/* <Input
           type='text'
           placeholder='Room Code'
           value={inputRoomCode}
           onChange={(e) => setInputRoomCode(e.target.value)}
           className='p-3 rounded-md'
         />
-        <Button onClick={handleJoinRoom}>Join Room</Button>
-        <Button onClick={handleCreateRoom}>Create Room</Button>
+        <Button onClick={handleJoinRoom}>Join Room</Button> */}
+        <Dialog>
+          <DialogTrigger asChild>
+            <Button>Join Room</Button>
+          </DialogTrigger>
+          <DialogContent className='sm:max-w[425px]'>
+            <DialogHeader>
+              <DialogTitle>Please Enter Room Code</DialogTitle>
+              <DialogDescription>
+                Some description for the dialog goes here.
+              </DialogDescription>
+            </DialogHeader>
+
+            <Input
+              type='text'
+              placeholder='Room Code'
+              value={inputRoomCode}
+              onChange={(e) => setInputRoomCode(e.target.value)}
+              className='p-3 rounded-md'
+            />
+            <DialogFooter>
+              <Button
+                onClick={handleJoinRoom}
+                disabled={!inputRoomCode || !inputUsername}
+                className='mt-4'
+              >
+                Join Room
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+
+        <Button onClick={handleCreateRoom} disabled={!inputUsername}>
+          Create Room
+        </Button>
       </div>
     </div>
   );
