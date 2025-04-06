@@ -72,9 +72,7 @@ export default function Landing() {
           <DialogContent className='sm:max-w[425px]'>
             <DialogHeader>
               <DialogTitle>Please Enter Room Code</DialogTitle>
-              <DialogDescription>
-                Some description for the dialog goes here.
-              </DialogDescription>
+              <DialogDescription></DialogDescription>
             </DialogHeader>
 
             <Input
